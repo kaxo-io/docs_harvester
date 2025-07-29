@@ -2,6 +2,13 @@
 """
 GitHub Documentation Fetcher - Downloads markdown files and converts to PDF
 Works with any GitHub repository's docs folder or specific paths
+
+Copyright (c) 2025 Kaxo Technologies
+Contact: tech [ a t ] kaxo.io
+Vibe coded by Kaxo Technologies
+
+Licensed for personal and non-commercial use.
+Commercial use requires permission from Kaxo Technologies.
 """
 
 import requests
@@ -16,7 +23,7 @@ from bs4 import BeautifulSoup
 import argparse
 
 class GitHubDocFetcher:
-    def __init__(self, repo_url: str, output_dir: str = "github_docs"):
+    def __init__(self, repo_url: str, output_dir: str = "harvested_docs"):
         self.repo_url = repo_url.rstrip('/')
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
@@ -24,8 +31,8 @@ class GitHubDocFetcher:
         # Parse GitHub repo info
         self._parse_github_url(repo_url)
         
-        # Create subdirectory for this specific repo/path
-        self.repo_output_dir = self.output_dir / f"{self.owner}_{self.repo}_{self.docs_path.replace('/', '_')}"
+        # Create subdirectory like: harvested_docs/github_docs_ollama
+        self.repo_output_dir = self.output_dir / f"github_docs_{self.owner}_{self.repo}"
         self.repo_output_dir.mkdir(exist_ok=True)
         self.md_dir = self.repo_output_dir / "markdown"
         self.md_dir.mkdir(exist_ok=True)
@@ -342,7 +349,7 @@ class GitHubDocFetcher:
 def main():
     parser = argparse.ArgumentParser(description='Fetch GitHub documentation and convert to PDF')
     parser.add_argument('repo_url', help='GitHub repository URL (e.g., https://github.com/owner/repo or https://github.com/owner/repo/tree/branch/docs)')
-    parser.add_argument('--output-dir', default='github_docs', help='Output directory')
+    parser.add_argument('--output-dir', default='harvested_docs', help='Output directory')
     parser.add_argument('--format', choices=['pdf', 'json', 'both'], default='both', help='Output format')
     
     args = parser.parse_args()

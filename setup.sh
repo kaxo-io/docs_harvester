@@ -1,5 +1,12 @@
 #!/bin/bash
 # Documentation Harvester Setup Script
+#
+# Copyright (c) 2025 Kaxo Technologies
+# Contact: tech [ a t ] kaxo.io
+# Vibe coded by Kaxo Technologies
+#
+# Licensed for personal and non-commercial use.
+# Commercial use requires permission from Kaxo Technologies.
 
 set -e  # Exit on any error
 
