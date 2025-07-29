@@ -1,5 +1,12 @@
 #!/bin/bash
 # Universal GitHub Documentation Fetcher
+#
+# Copyright (c) 2025 Kaxo Technologies
+# Contact: tech [ a t ] kaxo.io
+# Vibe coded by Kaxo Technologies
+#
+# Licensed for personal and non-commercial use.
+# Commercial use requires permission from Kaxo Technologies.
 
 set -e
 
@@ -25,15 +32,11 @@ fi
 echo "🔧 Activating environment..."
 source doc_harvester_env/bin/activate
 
-# Install additional dependency for markdown
-echo "📦 Installing markdown support..."
-pip install markdown
-
 # Fetch docs
 echo "🕷️  Fetching documentation..."
 python github_doc_fetcher.py "$URL" --format both
 
-echo "✅ Complete! Check the 'github_docs' folder for output files."
+echo "✅ Complete! Check the 'harvested_docs' folder for output files."
 echo ""
 echo "Usage examples:"
 echo "  ./fetch_github_docs.sh https://github.com/ollama/ollama/tree/main/docs"

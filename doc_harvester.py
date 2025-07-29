@@ -2,6 +2,13 @@
 """
 Documentation Harvester - Scrapes and compiles documentation into PDF
 Supports common doc sites like GitBook, Docusaurus, MkDocs, etc.
+
+Copyright (c) 2025 Kaxo Technologies
+Contact: tech [ a t ] kaxo.io
+Vibe coded by Kaxo Technologies
+
+Licensed for personal and non-commercial use.
+Commercial use requires permission from Kaxo Technologies.
 """
 
 import requests
@@ -21,6 +28,12 @@ class DocHarvester:
         self.domain = urlparse(base_url).netloc
         self.output_dir = Path(output_dir)
         self.output_dir.mkdir(exist_ok=True)
+        
+        # Create project-specific subdirectory like: harvested_docs/openwebui_com_site_docs
+        site_name = self.domain.replace('.', '_').replace('docs_', '')
+        self.project_dir = self.output_dir / f"{site_name}_site_docs"
+        self.project_dir.mkdir(exist_ok=True)
+        
         self.visited_urls: Set[str] = set()
         self.pages: List[Dict] = []
         
@@ -256,12 +269,12 @@ class DocHarvester:
         html_content += "</body></html>"
         
         # Save HTML
-        html_file = self.output_dir / f"{filename}.html"
+        html_file = self.project_dir / f"{filename}.html"
         with open(html_file, 'w', encoding='utf-8') as f:
             f.write(html_content)
         
         # Generate PDF
-        pdf_file = self.output_dir / filename
+        pdf_file = self.project_dir / filename
         try:
             weasyprint.HTML(string=html_content).write_pdf(str(pdf_file))
             print(f"PDF generated: {pdf_file}")
@@ -274,7 +287,7 @@ class DocHarvester:
         if not filename:
             filename = f"{self.domain.replace('.', '_')}_docs.json"
         
-        json_file = self.output_dir / filename
+        json_file = self.project_dir / filename
         with open(json_file, 'w', encoding='utf-8') as f:
             json.dump(self.pages, f, indent=2, ensure_ascii=False)
         
