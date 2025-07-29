@@ -24,16 +24,30 @@ class DocHarvester:
         self.visited_urls: Set[str] = set()
         self.pages: List[Dict] = []
         
+        # Safety limits
+        self.non_docs_count = 0
+        self.max_non_docs = 5  # Stop if we hit too many non-docs pages
+        
+        # For GitHub, restrict to the specific path
+        self.github_path_restriction = None
+        if 'github.com' in self.domain and '/tree/' in base_url:
+            # Extract the path restriction from URL like /owner/repo/tree/branch/docs
+            parts = base_url.split('/tree/')
+            if len(parts) > 1:
+                self.github_path_restriction = parts[1]  # e.g., "main/docs"
+        
         # Common selectors for different doc frameworks
         self.content_selectors = [
             'main',
-            '.markdown-body',
+            '.markdown-body',          # GitHub
             '.content',
             'article',
             '.docusaurus-content',
             '.gitbook-content',
             '.md-content',
-            '[role="main"]'
+            '[role="main"]',
+            '#readme',                 # GitHub README
+            '.Box-body'                # GitHub file content
         ]
         
         self.nav_selectors = [
@@ -41,7 +55,9 @@ class DocHarvester:
             '.sidebar a[href]',
             '.navigation a[href]',
             '.toc a[href]',
-            '.menu a[href]'
+            '.menu a[href]',
+            '.js-navigation-item a[href]',  # GitHub file browser
+            '.Box a[href]'             # GitHub directory listings
         ]
 
     def get_page_content(self, url: str) -> Dict:
@@ -131,12 +147,35 @@ class DocHarvester:
         skip_patterns = ['/api/', '/images/', '/assets/', '/static/', '/_next/']
         if any(pattern in url for pattern in skip_patterns):
             return False
+        
+        # For GitHub, be very restrictive
+        if 'github.com' in self.domain:
+            # Skip issues, pulls, releases, etc.
+            github_skip = ['/issues/', '/pull/', '/releases/', '/actions/', '/security/', '/pulse/', '/graphs/', '/wiki/', '/projects/', '/settings/']
+            if any(pattern in url for pattern in github_skip):
+                return False
             
+            # If we have a path restriction, enforce it strictly
+            if self.github_path_restriction:
+                restriction_parts = self.github_path_restriction.split('/')
+                expected_base = f"/{'/'.join(url.split('/')[3:5])}/blob/{restriction_parts[0]}/{'/'.join(restriction_parts[1:])}"
+                if not url.startswith(f"https://github.com{expected_base}"):
+                    return False
+            
+            # Only include markdown files in docs areas
+            if '/blob/' in url:
+                return url.endswith('.md')
+            elif '/tree/' in url:
+                # Only allow directory navigation within docs
+                return self.github_path_restriction and self.github_path_restriction in url
+                
         return True
 
     def crawl_documentation(self, max_pages: int = 100):
         """Crawl the documentation site"""
         print(f"Starting crawl of {self.base_url}")
+        if self.github_path_restriction:
+            print(f"GitHub path restriction: {self.github_path_restriction}")
         
         to_visit = {self.base_url}
         
@@ -144,6 +183,14 @@ class DocHarvester:
             url = to_visit.pop()
             
             if url in self.visited_urls:
+                continue
+                
+            # Safety check for non-docs URLs
+            if not self.is_valid_doc_url(url):
+                self.non_docs_count += 1
+                if self.non_docs_count > self.max_non_docs:
+                    print(f"⚠️  Hit safety limit: {self.max_non_docs} non-docs URLs. Stopping crawl.")
+                    break
                 continue
                 
             print(f"Processing: {url}")
@@ -162,6 +209,8 @@ class DocHarvester:
             time.sleep(0.5)
         
         print(f"Crawled {len(self.pages)} pages")
+        if self.non_docs_count > 0:
+            print(f"Skipped {self.non_docs_count} non-docs URLs")
 
     def generate_pdf(self, filename: str = None):
         """Generate PDF from collected pages"""

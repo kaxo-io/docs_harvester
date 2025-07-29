@@ -3,7 +3,16 @@
 
 set -e
 
-echo "🕷️  Starting OpenWebUI Documentation Harvester..."
+echo "🕷️  Starting Documentation Harvester..."
+
+# Check which docs to harvest
+if [ "$1" = "ollama" ]; then
+    URL="https://github.com/ollama/ollama/tree/main/docs"
+    echo "📚 Harvesting Ollama documentation..."
+else
+    URL="https://docs.openwebui.com"
+    echo "📚 Harvesting OpenWebUI documentation..."
+fi
 
 # Check if virtual environment exists
 if [ ! -d "doc_harvester_env" ]; then
@@ -15,11 +24,7 @@ fi
 echo "🔧 Activating environment..."
 source doc_harvester_env/bin/activate
 
-# Run harvester on OpenWebUI docs
-echo "📚 Harvesting OpenWebUI documentation..."
-python doc_harvester.py https://docs.openwebui.com --max-pages 50 --format both
+# Run harvester
+python doc_harvester.py "$URL" --max-pages 50 --format both
 
-echo "✅ Complete! Check the 'harvested_docs' folder for:"
-echo "   - PDF: docs_openwebui_com_docs.pdf"
-echo "   - JSON: docs_openwebui_com_docs.json"
-echo "   - HTML: docs_openwebui_com_docs.pdf.html"
+echo "✅ Complete! Check the 'harvested_docs' folder for output files."
