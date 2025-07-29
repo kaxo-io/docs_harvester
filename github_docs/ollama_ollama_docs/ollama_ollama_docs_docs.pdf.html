@@ -1,0 +1,3496 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>ollama/ollama Documentation</title>
+            <style>
+                body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; margin: 2cm; line-height: 1.6; }
+                h1, h2, h3, h4, h5, h6 { color: #24292f; page-break-after: avoid; }
+                .page-break { page-break-before: always; }
+                .file-header { color: #656d76; font-size: 0.9em; margin-bottom: 1em; }
+                pre { background: #f6f8fa; padding: 1em; overflow: auto; border-radius: 6px; border: 1px solid #d0d7de; }
+                code { background: #f6f8fa; padding: 0.2em 0.4em; border-radius: 3px; font-size: 85%; }
+                blockquote { border-left: 4px solid #d0d7de; margin: 0; padding: 0 1em; color: #656d76; }
+                table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+                th, td { border: 1px solid #d0d7de; padding: 6px 13px; text-align: left; }
+                th { background-color: #f6f8fa; font-weight: 600; }
+                .toc { page-break-after: always; }
+                .toc ul { list-style-type: none; padding-left: 0; }
+                .toc li { margin: 0.5em 0; }
+                .toc a { text-decoration: none; color: #0969da; }
+                .cover { text-align: center; page-break-after: always; }
+            </style>
+        </head>
+        <body>
+            <div class="cover">
+                <h1>ollama/ollama</h1>
+                <h2>Documentation</h2>
+                <p>Branch: main | Path: docs</p>
+                <p>Generated on 2025-07-29 18:57:29</p>
+            </div>
+            
+            <div class="toc">
+                <h2>Table of Contents</h2>
+                <ul>
+        <li><a href="#README.md">README.md</a></li>
+<li><a href="#api.md">api.md</a></li>
+<li><a href="#development.md">development.md</a></li>
+<li><a href="#docker.md">docker.md</a></li>
+<li><a href="#examples.md">examples.md</a></li>
+<li><a href="#faq.md">faq.md</a></li>
+<li><a href="#gpu.md">gpu.md</a></li>
+<li><a href="#import.md">import.md</a></li>
+<li><a href="#linux.md">linux.md</a></li>
+<li><a href="#macos.md">macos.md</a></li>
+<li><a href="#modelfile.md">modelfile.md</a></li>
+<li><a href="#openai.md">openai.md</a></li>
+<li><a href="#template.md">template.md</a></li>
+<li><a href="#troubleshooting.md">troubleshooting.md</a></li>
+<li><a href="#windows.md">windows.md</a></li>
+
+                </ul>
+            </div>
+        
+            <div id="README.md">
+                <div class="file-header">File: README.md | Repository: ollama/ollama</div>
+                <h2>README.md</h2>
+                
+
+
+
+<h1 id="documentation">Documentation</h1>
+<h3 id="getting-started">Getting Started</h3>
+<ul>
+<li><a href="../README.md#quickstart">Quickstart</a></li>
+<li><a href="./examples.md">Examples</a></li>
+<li><a href="./import.md">Importing models</a></li>
+<li><a href="./macos.md">MacOS Documentation</a></li>
+<li><a href="./linux.md">Linux Documentation</a></li>
+<li><a href="./windows.md">Windows Documentation</a></li>
+<li><a href="./docker.md">Docker Documentation</a></li>
+</ul>
+<h3 id="reference">Reference</h3>
+<ul>
+<li><a href="./api.md">API Reference</a></li>
+<li><a href="./modelfile.md">Modelfile Reference</a></li>
+<li><a href="./openai.md">OpenAI Compatibility</a></li>
+</ul>
+<h3 id="resources">Resources</h3>
+<ul>
+<li><a href="./troubleshooting.md">Troubleshooting Guide</a></li>
+<li><a href="./faq.md">FAQ</a></li>
+<li><a href="./development.md">Development guide</a></li>
+</ul>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="api.md">
+                <div class="file-header">File: api.md | Repository: ollama/ollama</div>
+                <h2>api.md</h2>
+                
+
+
+
+<h1 id="api">API</h1>
+<h2 id="endpoints">Endpoints</h2>
+<ul>
+<li><a href="#generate-a-completion">Generate a completion</a></li>
+<li><a href="#generate-a-chat-completion">Generate a chat completion</a></li>
+<li><a href="#create-a-model">Create a Model</a></li>
+<li><a href="#list-local-models">List Local Models</a></li>
+<li><a href="#show-model-information">Show Model Information</a></li>
+<li><a href="#copy-a-model">Copy a Model</a></li>
+<li><a href="#delete-a-model">Delete a Model</a></li>
+<li><a href="#pull-a-model">Pull a Model</a></li>
+<li><a href="#push-a-model">Push a Model</a></li>
+<li><a href="#generate-embeddings">Generate Embeddings</a></li>
+<li><a href="#list-running-models">List Running Models</a></li>
+<li><a href="#version">Version</a></li>
+</ul>
+<h2 id="conventions">Conventions</h2>
+<h3 id="model-names">Model names</h3>
+<p>Model names follow a <code>model:tag</code> format, where <code>model</code> can have an optional namespace such as <code>example/model</code>. Some examples are <code>orca-mini:3b-q8_0</code> and <code>llama3:70b</code>. The tag is optional and, if not provided, will default to <code>latest</code>. The tag is used to identify a specific version.</p>
+<h3 id="durations">Durations</h3>
+<p>All durations are returned in nanoseconds.</p>
+<h3 id="streaming-responses">Streaming responses</h3>
+<p>Certain endpoints stream responses as JSON objects. Streaming can be disabled by providing <code>{"stream": false}</code> for these endpoints.</p>
+<h2 id="generate-a-completion">Generate a completion</h2>
+<pre class="codehilite"><code>POST /api/generate
+</code></pre>
+<p>Generate a response for a given prompt with a provided model. This is a streaming endpoint, so there will be a series of responses. The final response object will include statistics and additional data from the request.</p>
+<h3 id="parameters">Parameters</h3>
+<ul>
+<li><code>model</code>: (required) the <a href="#model-names">model name</a></li>
+<li><code>prompt</code>: the prompt to generate a response for</li>
+<li><code>suffix</code>: the text after the model response</li>
+<li><code>images</code>: (optional) a list of base64-encoded images (for multimodal models such as <code>llava</code>)</li>
+<li><code>think</code>: (for thinking models) should the model think before responding?</li>
+</ul>
+<p>Advanced parameters (optional):</p>
+<ul>
+<li><code>format</code>: the format to return a response in. Format can be <code>json</code> or a JSON schema</li>
+<li><code>options</code>: additional model parameters listed in the documentation for the <a href="./modelfile.md#valid-parameters-and-values">Modelfile</a> such as <code>temperature</code></li>
+<li><code>system</code>: system message to (overrides what is defined in the <code>Modelfile</code>)</li>
+<li><code>template</code>: the prompt template to use (overrides what is defined in the <code>Modelfile</code>)</li>
+<li><code>stream</code>: if <code>false</code> the response will be returned as a single response object, rather than a stream of objects</li>
+<li><code>raw</code>: if <code>true</code> no formatting will be applied to the prompt. You may choose to use the <code>raw</code> parameter if you are specifying a full templated prompt in your request to the API</li>
+<li><code>keep_alive</code>: controls how long the model will stay loaded into memory following the request (default: <code>5m</code>)</li>
+<li><code>context</code> (deprecated): the context parameter returned from a previous request to <code>/generate</code>, this can be used to keep a short conversational memory</li>
+</ul>
+<h4 id="structured-outputs">Structured outputs</h4>
+<p>Structured outputs are supported by providing a JSON schema in the <code>format</code> parameter. The model will generate a response that matches the schema. See the <a href="#request-structured-outputs">structured outputs</a> example below.</p>
+<h4 id="json-mode">JSON mode</h4>
+<p>Enable JSON mode by setting the <code>format</code> parameter to <code>json</code>. This will structure the response as a valid JSON object. See the JSON mode <a href="#request-json-mode">example</a> below.</p>
+<blockquote>
+<p>[!IMPORTANT]
+It's important to instruct the model to use JSON in the <code>prompt</code>. Otherwise, the model may generate large amounts whitespace.</p>
+</blockquote>
+<h3 id="examples">Examples</h3>
+<h4 id="generate-request-streaming">Generate request (Streaming)</h4>
+<h5 id="request">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{
+  "model": "llama3.2",
+  "prompt": "Why is the sky blue?"
+}'
+</code></pre>
+<h5 id="response">Response</h5>
+<p>A stream of JSON objects is returned:</p>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2023-08-04T08:52:19.385406455-07:00",
+  "response": "The",
+  "done": false
+}
+</code></pre>
+<p>The final response in the stream also includes additional data about the generation:</p>
+<ul>
+<li><code>total_duration</code>: time spent generating the response</li>
+<li><code>load_duration</code>: time spent in nanoseconds loading the model</li>
+<li><code>prompt_eval_count</code>: number of tokens in the prompt</li>
+<li><code>prompt_eval_duration</code>: time spent in nanoseconds evaluating the prompt</li>
+<li><code>eval_count</code>: number of tokens in the response</li>
+<li><code>eval_duration</code>: time in nanoseconds spent generating the response</li>
+<li><code>context</code>: an encoding of the conversation used in this response, this can be sent in the next request to keep a conversational memory</li>
+<li><code>response</code>: empty if the response was streamed, if not streamed, this will contain the full response</li>
+</ul>
+<p>To calculate how fast the response is generated in tokens per second (token/s), divide <code>eval_count</code> / <code>eval_duration</code> * <code>10^9</code>.</p>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2023-08-04T19:22:45.499127Z",
+  "response": "",
+  "done": true,
+  "context": [1, 2, 3],
+  "total_duration": 10706818083,
+  "load_duration": 6338219291,
+  "prompt_eval_count": 26,
+  "prompt_eval_duration": 130079000,
+  "eval_count": 259,
+  "eval_duration": 4232710000
+}
+</code></pre>
+<h4 id="request-no-streaming">Request (No streaming)</h4>
+<h5 id="request_1">Request</h5>
+<p>A response can be received in one reply when streaming is off.</p>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{
+  "model": "llama3.2",
+  "prompt": "Why is the sky blue?",
+  "stream": false
+}'
+</code></pre>
+<h5 id="response_1">Response</h5>
+<p>If <code>stream</code> is set to <code>false</code>, the response will be a single JSON object:</p>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2023-08-04T19:22:45.499127Z",
+  "response": "The sky is blue because it is the color of the sky.",
+  "done": true,
+  "context": [1, 2, 3],
+  "total_duration": 5043500667,
+  "load_duration": 5025959,
+  "prompt_eval_count": 26,
+  "prompt_eval_duration": 325953000,
+  "eval_count": 290,
+  "eval_duration": 4709213000
+}
+</code></pre>
+<h4 id="request-with-suffix">Request (with suffix)</h4>
+<h5 id="request_2">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{
+  "model": "codellama:code",
+  "prompt": "def compute_gcd(a, b):",
+  "suffix": "    return result",
+  "options": {
+    "temperature": 0
+  },
+  "stream": false
+}'
+</code></pre>
+<h5 id="response_2">Response</h5>
+<pre class="codehilite"><code class="language-json5">{
+  "model": "codellama:code",
+  "created_at": "2024-07-22T20:47:51.147561Z",
+  "response": "\n  if a == 0:\n    return b\n  else:\n    return compute_gcd(b % a, a)\n\ndef compute_lcm(a, b):\n  result = (a * b) / compute_gcd(a, b)\n",
+  "done": true,
+  "done_reason": "stop",
+  "context": [...],
+  "total_duration": 1162761250,
+  "load_duration": 6683708,
+  "prompt_eval_count": 17,
+  "prompt_eval_duration": 201222000,
+  "eval_count": 63,
+  "eval_duration": 953997000
+}
+</code></pre>
+<h4 id="request-structured-outputs">Request (Structured outputs)</h4>
+<h5 id="request_3">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl -X POST http://localhost:11434/api/generate -H "Content-Type: application/json" -d '{
+  "model": "llama3.1:8b",
+  "prompt": "Ollama is 22 years old and is busy saving the world. Respond using JSON",
+  "stream": false,
+  "format": {
+    "type": "object",
+    "properties": {
+      "age": {
+        "type": "integer"
+      },
+      "available": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "age",
+      "available"
+    ]
+  }
+}'
+</code></pre>
+<h5 id="response_3">Response</h5>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.1:8b",
+  "created_at": "2024-12-06T00:48:09.983619Z",
+  "response": "{\n  \"age\": 22,\n  \"available\": true\n}",
+  "done": true,
+  "done_reason": "stop",
+  "context": [1, 2, 3],
+  "total_duration": 1075509083,
+  "load_duration": 567678166,
+  "prompt_eval_count": 28,
+  "prompt_eval_duration": 236000000,
+  "eval_count": 16,
+  "eval_duration": 269000000
+}
+</code></pre>
+<h4 id="request-json-mode">Request (JSON mode)</h4>
+<blockquote>
+<p>[!IMPORTANT]
+When <code>format</code> is set to <code>json</code>, the output will always be a well-formed JSON object. It's important to also instruct the model to respond in JSON.</p>
+</blockquote>
+<h5 id="request_4">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{
+  "model": "llama3.2",
+  "prompt": "What color is the sky at different times of the day? Respond using JSON",
+  "format": "json",
+  "stream": false
+}'
+</code></pre>
+<h5 id="response_4">Response</h5>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2023-11-09T21:07:55.186497Z",
+  "response": "{\n\"morning\": {\n\"color\": \"blue\"\n},\n\"noon\": {\n\"color\": \"blue-gray\"\n},\n\"afternoon\": {\n\"color\": \"warm gray\"\n},\n\"evening\": {\n\"color\": \"orange\"\n}\n}\n",
+  "done": true,
+  "context": [1, 2, 3],
+  "total_duration": 4648158584,
+  "load_duration": 4071084,
+  "prompt_eval_count": 36,
+  "prompt_eval_duration": 439038000,
+  "eval_count": 180,
+  "eval_duration": 4196918000
+}
+</code></pre>
+<p>The value of <code>response</code> will be a string containing JSON similar to:</p>
+<pre class="codehilite"><code class="language-json">{
+  "morning": {
+    "color": "blue"
+  },
+  "noon": {
+    "color": "blue-gray"
+  },
+  "afternoon": {
+    "color": "warm gray"
+  },
+  "evening": {
+    "color": "orange"
+  }
+}
+</code></pre>
+<h4 id="request-with-images">Request (with images)</h4>
+<p>To submit images to multimodal models such as <code>llava</code> or <code>bakllava</code>, provide a list of base64-encoded <code>images</code>:</p>
+<h4 id="request_5">Request</h4>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{
+  "model": "llava",
+  "prompt":"What is in this picture?",
+  "stream": false,
+  "images": ["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"]
+}'
+</code></pre>
+<h4 id="response_5">Response</h4>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llava",
+  "created_at": "2023-11-03T15:36:02.583064Z",
+  "response": "A happy cartoon character, which is cute and cheerful.",
+  "done": true,
+  "context": [1, 2, 3],
+  "total_duration": 2938432250,
+  "load_duration": 2559292,
+  "prompt_eval_count": 1,
+  "prompt_eval_duration": 2195557000,
+  "eval_count": 44,
+  "eval_duration": 736432000
+}
+</code></pre>
+<h4 id="request-raw-mode">Request (Raw Mode)</h4>
+<p>In some cases, you may wish to bypass the templating system and provide a full prompt. In this case, you can use the <code>raw</code> parameter to disable templating. Also note that raw mode will not return a context.</p>
+<h5 id="request_6">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{
+  "model": "mistral",
+  "prompt": "[INST] why is the sky blue? [/INST]",
+  "raw": true,
+  "stream": false
+}'
+</code></pre>
+<h4 id="request-reproducible-outputs">Request (Reproducible outputs)</h4>
+<p>For reproducible outputs, set <code>seed</code> to a number:</p>
+<h5 id="request_7">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{
+  "model": "mistral",
+  "prompt": "Why is the sky blue?",
+  "options": {
+    "seed": 123
+  }
+}'
+</code></pre>
+<h5 id="response_6">Response</h5>
+<pre class="codehilite"><code class="language-json">{
+  "model": "mistral",
+  "created_at": "2023-11-03T15:36:02.583064Z",
+  "response": " The sky appears blue because of a phenomenon called Rayleigh scattering.",
+  "done": true,
+  "total_duration": 8493852375,
+  "load_duration": 6589624375,
+  "prompt_eval_count": 14,
+  "prompt_eval_duration": 119039000,
+  "eval_count": 110,
+  "eval_duration": 1779061000
+}
+</code></pre>
+<h4 id="generate-request-with-options">Generate request (With options)</h4>
+<p>If you want to set custom options for the model at runtime rather than in the Modelfile, you can do so with the <code>options</code> parameter. This example sets every available option, but you can set any of them individually and omit the ones you do not want to override.</p>
+<h5 id="request_8">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{
+  "model": "llama3.2",
+  "prompt": "Why is the sky blue?",
+  "stream": false,
+  "options": {
+    "num_keep": 5,
+    "seed": 42,
+    "num_predict": 100,
+    "top_k": 20,
+    "top_p": 0.9,
+    "min_p": 0.0,
+    "typical_p": 0.7,
+    "repeat_last_n": 33,
+    "temperature": 0.8,
+    "repeat_penalty": 1.2,
+    "presence_penalty": 1.5,
+    "frequency_penalty": 1.0,
+    "penalize_newline": true,
+    "stop": ["\n", "user:"],
+    "numa": false,
+    "num_ctx": 1024,
+    "num_batch": 2,
+    "num_gpu": 1,
+    "main_gpu": 0,
+    "use_mmap": true,
+    "num_thread": 8
+  }
+}'
+</code></pre>
+<h5 id="response_7">Response</h5>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2023-08-04T19:22:45.499127Z",
+  "response": "The sky is blue because it is the color of the sky.",
+  "done": true,
+  "context": [1, 2, 3],
+  "total_duration": 4935886791,
+  "load_duration": 534986708,
+  "prompt_eval_count": 26,
+  "prompt_eval_duration": 107345000,
+  "eval_count": 237,
+  "eval_duration": 4289432000
+}
+</code></pre>
+<h4 id="load-a-model">Load a model</h4>
+<p>If an empty prompt is provided, the model will be loaded into memory.</p>
+<h5 id="request_9">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{
+  "model": "llama3.2"
+}'
+</code></pre>
+<h5 id="response_8">Response</h5>
+<p>A single JSON object is returned:</p>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2023-12-18T19:52:07.071755Z",
+  "response": "",
+  "done": true
+}
+</code></pre>
+<h4 id="unload-a-model">Unload a model</h4>
+<p>If an empty prompt is provided and the <code>keep_alive</code> parameter is set to <code>0</code>, a model will be unloaded from memory.</p>
+<h5 id="request_10">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{
+  "model": "llama3.2",
+  "keep_alive": 0
+}'
+</code></pre>
+<h5 id="response_9">Response</h5>
+<p>A single JSON object is returned:</p>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2024-09-12T03:54:03.516566Z",
+  "response": "",
+  "done": true,
+  "done_reason": "unload"
+}
+</code></pre>
+<h2 id="generate-a-chat-completion">Generate a chat completion</h2>
+<pre class="codehilite"><code>POST /api/chat
+</code></pre>
+<p>Generate the next message in a chat with a provided model. This is a streaming endpoint, so there will be a series of responses. Streaming can be disabled using <code>"stream": false</code>. The final response object will include statistics and additional data from the request.</p>
+<h3 id="parameters_1">Parameters</h3>
+<ul>
+<li><code>model</code>: (required) the <a href="#model-names">model name</a></li>
+<li><code>messages</code>: the messages of the chat, this can be used to keep a chat memory</li>
+<li><code>tools</code>: list of tools in JSON for the model to use if supported</li>
+<li><code>think</code>: (for thinking models) should the model think before responding?</li>
+</ul>
+<p>The <code>message</code> object has the following fields:</p>
+<ul>
+<li><code>role</code>: the role of the message, either <code>system</code>, <code>user</code>, <code>assistant</code>, or <code>tool</code></li>
+<li><code>content</code>: the content of the message</li>
+<li><code>thinking</code>: (for thinking models) the model's thinking process</li>
+<li><code>images</code> (optional): a list of images to include in the message (for multimodal models such as <code>llava</code>)</li>
+<li><code>tool_calls</code> (optional): a list of tools in JSON that the model wants to use</li>
+<li><code>tool_name</code> (optional): add the name of the tool that was executed to inform the model of the result</li>
+</ul>
+<p>Advanced parameters (optional):</p>
+<ul>
+<li><code>format</code>: the format to return a response in. Format can be <code>json</code> or a JSON schema.</li>
+<li><code>options</code>: additional model parameters listed in the documentation for the <a href="./modelfile.md#valid-parameters-and-values">Modelfile</a> such as <code>temperature</code></li>
+<li><code>stream</code>: if <code>false</code> the response will be returned as a single response object, rather than a stream of objects</li>
+<li><code>keep_alive</code>: controls how long the model will stay loaded into memory following the request (default: <code>5m</code>)</li>
+</ul>
+<h3 id="tool-calling">Tool calling</h3>
+<p>Tool calling is supported by providing a list of tools in the <code>tools</code> parameter. The model will generate a response that includes a list of tool calls. See the <a href="#chat-request-streaming-with-tools">Chat request (Streaming with tools)</a> example below.</p>
+<p>Models can also explain the result of the tool call in the response. See the <a href="#chat-request-with-history-with-tools">Chat request (With history, with tools)</a> example below.</p>
+<p><a href="https://ollama.com/search?c=tool">See models with tool calling capabilities</a>.</p>
+<h3 id="structured-outputs_1">Structured outputs</h3>
+<p>Structured outputs are supported by providing a JSON schema in the <code>format</code> parameter. The model will generate a response that matches the schema. See the <a href="#chat-request-structured-outputs">Chat request (Structured outputs)</a> example below.</p>
+<h3 id="examples_1">Examples</h3>
+<h4 id="chat-request-streaming">Chat request (Streaming)</h4>
+<h5 id="request_11">Request</h5>
+<p>Send a chat message with a streaming response.</p>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/chat -d '{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "why is the sky blue?"
+    }
+  ]
+}'
+</code></pre>
+<h5 id="response_10">Response</h5>
+<p>A stream of JSON objects is returned:</p>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2023-08-04T08:52:19.385406455-07:00",
+  "message": {
+    "role": "assistant",
+    "content": "The",
+    "images": null
+  },
+  "done": false
+}
+</code></pre>
+<p>Final response:</p>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2023-08-04T19:22:45.499127Z",
+  "message": {
+    "role": "assistant",
+    "content": ""
+  },
+  "done": true,
+  "total_duration": 4883583458,
+  "load_duration": 1334875,
+  "prompt_eval_count": 26,
+  "prompt_eval_duration": 342546000,
+  "eval_count": 282,
+  "eval_duration": 4535599000
+}
+</code></pre>
+<h4 id="chat-request-streaming-with-tools">Chat request (Streaming with tools)</h4>
+<h5 id="request_12">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/chat -d '{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "what is the weather in tokyo?"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "Get the weather in a given city",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string",
+              "description": "The city to get the weather for"
+            }
+          },
+          "required": ["city"]
+        }
+      }
+    }
+  ],
+  "stream": true
+}'
+</code></pre>
+<h5 id="response_11">Response</h5>
+<p>A stream of JSON objects is returned:</p>
+<pre class="codehilite"><code class="language-json">{
+    "model": "llama3.2",
+    "created_at": "2025-07-07T20:22:19.184789Z",
+    "message": {
+        "role": "assistant",
+        "content": "",
+        "tool_calls": [
+            {
+                "function": {
+                    "name": "get_weather",
+                    "arguments": {
+                        "city": "Tokyo"
+                    }
+                },
+            }
+        ]
+    },
+    "done": false
+}
+</code></pre>
+<p>Final response:</p>
+<pre class="codehilite"><code class="language-json">{
+  "model":"llama3.2",
+  "created_at":"2025-07-07T20:22:19.19314Z",
+  "message": {
+    "role": "assistant",
+    "content": ""
+  },
+  "done_reason": "stop",
+  "done": true,
+  "total_duration": 182242375,
+  "load_duration": 41295167,
+  "prompt_eval_count": 169,
+  "prompt_eval_duration": 24573166,
+  "eval_count": 15,
+  "eval_duration": 115959084
+}
+</code></pre>
+<h4 id="chat-request-no-streaming">Chat request (No streaming)</h4>
+<h5 id="request_13">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/chat -d '{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "why is the sky blue?"
+    }
+  ],
+  "stream": false
+}'
+</code></pre>
+<h5 id="response_12">Response</h5>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2023-12-12T14:13:43.416799Z",
+  "message": {
+    "role": "assistant",
+    "content": "Hello! How are you today?"
+  },
+  "done": true,
+  "total_duration": 5191566416,
+  "load_duration": 2154458,
+  "prompt_eval_count": 26,
+  "prompt_eval_duration": 383809000,
+  "eval_count": 298,
+  "eval_duration": 4799921000
+}
+</code></pre>
+<h4 id="chat-request-no-streaming-with-tools">Chat request (No streaming, with tools)</h4>
+<h5 id="request_14">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/chat -d '{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "what is the weather in tokyo?"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "Get the weather in a given city",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string",
+              "description": "The city to get the weather for"
+            }
+          },
+          "required": ["city"]
+        }
+      }
+    }
+  ],
+  "stream": false 
+}'
+</code></pre>
+<h5 id="response_13">Response</h5>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2025-07-07T20:32:53.844124Z",
+  "message": {
+    "role": "assistant",
+    "content": "",
+    "tool_calls": [
+      {
+        "function": {
+          "name": "get_weather",
+          "arguments": {
+            "city": "Tokyo"
+          }
+        },
+      }
+    ]
+  },
+  "done_reason": "stop",
+  "done": true,
+  "total_duration": 3244883583,
+  "load_duration": 2969184542,
+  "prompt_eval_count": 169,
+  "prompt_eval_duration": 141656333,
+  "eval_count": 18,
+  "eval_duration": 133293625
+}
+</code></pre>
+<h4 id="chat-request-structured-outputs">Chat request (Structured outputs)</h4>
+<h5 id="request_15">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl -X POST http://localhost:11434/api/chat -H "Content-Type: application/json" -d '{
+  "model": "llama3.1",
+  "messages": [{"role": "user", "content": "Ollama is 22 years old and busy saving the world. Return a JSON object with the age and availability."}],
+  "stream": false,
+  "format": {
+    "type": "object",
+    "properties": {
+      "age": {
+        "type": "integer"
+      },
+      "available": {
+        "type": "boolean"
+      }
+    },
+    "required": [
+      "age",
+      "available"
+    ]
+  },
+  "options": {
+    "temperature": 0
+  }
+}'
+</code></pre>
+<h5 id="response_14">Response</h5>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.1",
+  "created_at": "2024-12-06T00:46:58.265747Z",
+  "message": { "role": "assistant", "content": "{\"age\": 22, \"available\": false}" },
+  "done_reason": "stop",
+  "done": true,
+  "total_duration": 2254970291,
+  "load_duration": 574751416,
+  "prompt_eval_count": 34,
+  "prompt_eval_duration": 1502000000,
+  "eval_count": 12,
+  "eval_duration": 175000000
+}
+</code></pre>
+<h4 id="chat-request-with-history">Chat request (With History)</h4>
+<p>Send a chat message with a conversation history. You can use this same approach to start the conversation using multi-shot or chain-of-thought prompting.</p>
+<h5 id="request_16">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/chat -d '{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "why is the sky blue?"
+    },
+    {
+      "role": "assistant",
+      "content": "due to rayleigh scattering."
+    },
+    {
+      "role": "user",
+      "content": "how is that different than mie scattering?"
+    }
+  ]
+}'
+</code></pre>
+<h5 id="response_15">Response</h5>
+<p>A stream of JSON objects is returned:</p>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2023-08-04T08:52:19.385406455-07:00",
+  "message": {
+    "role": "assistant",
+    "content": "The"
+  },
+  "done": false
+}
+</code></pre>
+<p>Final response:</p>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2023-08-04T19:22:45.499127Z",
+  "done": true,
+  "total_duration": 8113331500,
+  "load_duration": 6396458,
+  "prompt_eval_count": 61,
+  "prompt_eval_duration": 398801000,
+  "eval_count": 468,
+  "eval_duration": 7701267000
+}
+</code></pre>
+<h4 id="chat-request-with-history-with-tools">Chat request (With history, with tools)</h4>
+<h5 id="request_17">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/chat -d '{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "what is the weather in Toronto?"
+    },
+    // the message from the model appended to history
+    {
+      "role": "assistant",
+      "content": "",
+      "tool_calls": [
+        {
+          "function": {
+            "name": "get_temperature",
+            "arguments": {
+              "city": "Toronto"
+            }
+          },
+        }
+      ]
+    },
+    // the tool call result appended to history
+    {
+      "role": "tool",
+      "content": "11 degrees celsius",
+      "tool_name": "get_temperature",
+    }
+  ],
+  "stream": false,
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "Get the weather in a given city",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "city": {
+              "type": "string",
+              "description": "The city to get the weather for"
+            }
+          },
+          "required": ["city"]
+        }
+      }
+    }
+  ]
+}'
+</code></pre>
+<h5 id="response_16">Response</h5>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2025-07-07T20:43:37.688511Z",
+  "message": {
+    "role": "assistant",
+    "content": "The current temperature in Toronto is 11°C."
+  },
+  "done_reason": "stop",
+  "done": true,
+  "total_duration": 890771750,
+  "load_duration": 707634750,
+  "prompt_eval_count": 94,
+  "prompt_eval_duration": 91703208,
+  "eval_count": 11,
+  "eval_duration": 90282125
+}
+</code></pre>
+<h4 id="chat-request-with-images">Chat request (with images)</h4>
+<h5 id="request_18">Request</h5>
+<p>Send a chat message with images. The images should be provided as an array, with the individual images encoded in Base64.</p>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/chat -d '{
+  "model": "llava",
+  "messages": [
+    {
+      "role": "user",
+      "content": "what is in this image?",
+      "images": ["iVBORw0KGgoAAAANSUhEUgAAAG0AAABmCAYAAADBPx+VAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAA3VSURBVHgB7Z27r0zdG8fX743i1bi1ikMoFMQloXRpKFFIqI7LH4BEQ+NWIkjQuSWCRIEoULk0gsK1kCBI0IhrQVT7tz/7zZo888yz1r7MnDl7z5xvsjkzs2fP3uu71nNfa7lkAsm7d++Sffv2JbNmzUqcc8m0adOSzZs3Z+/XES4ZckAWJEGWPiCxjsQNLWmQsWjRIpMseaxcuTKpG/7HP27I8P79e7dq1ars/yL4/v27S0ejqwv+cUOGEGGpKHR37tzJCEpHV9tnT58+dXXCJDdECBE2Ojrqjh071hpNECjx4cMHVycM1Uhbv359B2F79+51586daxN/+pyRkRFXKyRDAqxEp4yMlDDzXG1NPnnyJKkThoK0VFd1ELZu3TrzXKxKfW7dMBQ6bcuWLW2v0VlHjx41z717927ba22U9APcw7Nnz1oGEPeL3m3p2mTAYYnFmMOMXybPPXv2bNIPpFZr1NHn4HMw0KRBjg9NuRw95s8PEcz/6DZELQd/09C9QGq5RsmSRybqkwHGjh07OsJSsYYm3ijPpyHzoiacg35MLdDSIS/O1yM778jOTwYUkKNHWUzUWaOsylE00MyI0fcnOwIdjvtNdW/HZwNLGg+sR1kMepSNJXmIwxBZiG8tDTpEZzKg0GItNsosY8USkxDhD0Rinuiko2gfL/RbiD2LZAjU9zKQJj8RDR0vJBR1/Phx9+PHj9Z7REF4nTZkxzX4LCXHrV271qXkBAPGfP/atWvu/PnzHe4C97F48eIsRLZ9+3a3f/9+87dwP1JxaF7/3r17ba+5l4EcaVo0lj3SBq5kGTJSQmLWMjgYNei2GPT1MuMqGTDEFHzeQSP2wi/jGnkmPJ/nhccs44jvDAxpVcxnq0F6eT8h4ni/iIWpR5lPyA6ETkNXoSukvpJAD3AsXLiwpZs49+fPn5ke4j10TqYvegSfn0OnafC+Tv9ooA/JPkgQysqQNBzagXY55nO/oa1F7qvIPWkRL12WRpMWUvpVDYmxAPehxWSe8ZEXL20sadYIozfmNch4QJPAfeJgW3rNsnzphBKNJM2KKODo1rVOMRYik5ETy3ix4qWNI81qAAirizgMIc+yhTytx0JWZuNI03qsrgWlGtwjoS9XwgUhWGyhUaRZZQNNIEwCiXD16tXcAHUs79co0vSD8rrJCIW98pzvxpAWyyo3HYwqS0+H0BjStClcZJT5coMm6D2LOF8TolGJtK9fvyZpyiC5ePFi9nc/oJU4eiEP0jVoAnHa9wyJycITMP78+eMeP37sXrx44d6+fdt6f82aNdkx1pg9e3Zb5W+RSRE+n+VjksQWifvVaTKFhn5O8my63K8Qabdv33b379/PiAP//vuvW7BggZszZ072/+TJk91YgkafPn166zXB1rQHFvouAWHq9z3SEevSUerqCn2/dDCeta2jxYbr69evk4MHDyY7d+7MjhMnTiTPnz9Pfv/+nfQT2ggpO2dMF8cghuoM7Ygj5iWCqRlGFml0QC/ftGmTmzt3rmsaKDsgBSPh0/8yPeLLBihLkOKJc0jp8H8vUzcxIA1k6QJ/c78tWEyj5P3o4u9+jywNPdJi5rAH9x0KHcl4Hg570eQp3+vHXGyrmEeigzQsQsjavXt38ujRo44LQuDDhw+TW7duRS1HGgMxhNXHgflaNTOsHyKvHK5Ijo2jbFjJBQK9YwFd6RVMzfgRBmEfP37suBBm/p49e1qjEP2mwTViNRo0VJWH1deMXcNK08uUjVUu7s/zRaL+oLNxz1bpANco4npUgX4G2eFbpDFyQoQxojBCpEGSytmOH8qrH5Q9vuzD6ofQylkCUmh8DBAr+q8JCyVNtWQIidKQE9wNtLSQnS4jDSsxNHogzFuQBw4cyM61UKVsjfr3ooBkPSqqQHesUPWVtzi9/vQi1T+rJj7WiTz4Pt/l3LxUkr5P2VYZaZ4URpsE+st/dujQoaBBYokbrz/8TJNQYLSonrPS9kUaSkPeZyj1AWSj+d+VBoy1pIWVNed8P0Ll/ee5HdGRhrHhR5GGN0r4LGZBaj8oFDJitBTJzIZgFcmU0Y8ytWMZMzJOaXUSrUs5RxKnrxmbb5YXO9VGUhtpXldhEUogFr3IzIsvlpmdosVcGVGXFWp2oU9kLFL3dEkSz6NHEY1sjSRdIuDFWEhd8KxFqsRi1uM/nz9/zpxnwlESONdg6dKlbsaMGS4EHFHtjFIDHwKOo46l4TxSuxgDzi+rE2jg+BaFruOX4HXa0Nnf1lwAPufZeF8/r6zD97WK2qFnGjBxTw5qNGPxT+5T/r7/7RawFC3j4vTp09koCxkeHjqbHJqArmH5UrFKKksnxrK7FuRIs8STfBZv+luugXZ2pR/pP9Ois4z+TiMzUUkUjD0iEi1fzX8GmXyuxUBRcaUfykV0YZnlJGKQpOiGB76x5GeWkWWJc3mOrK6S7xdND+W5N6XyaRgtWJFe13GkaZnKOsYqGdOVVVbGupsyA/l7emTLHi7vwTdirNEt0qxnzAvBFcnQF16xh/TMpUuXHDowhlA9vQVraQhkudRdzOnK+04ZSP3DUhVSP61YsaLtd/ks7ZgtPcXqPqEafHkdqa84X6aCeL7YWlv6edGFHb+ZFICPlljHhg0bKuk0CSvVznWsotRu433alNdFrqG45ejoaPCaUkWERpLXjzFL2Rpllp7PJU2a/v7Ab8N05/9t27Z16KUqoFGsxnI9EosS2niSYg9SpU6B4JgTrvVW1flt1sT+0ADIJU2maXzcUTraGCRaL1Wp9rUMk16PMom8QhruxzvZIegJjFU7LLCePfS8uaQdPny4jTTL0dbee5mYokQsXTIWNY46kuMbnt8Kmec+LGWtOVIl9cT1rCB0V8WqkjAsRwta93TbwNYoGKsUSChN44lgBNCoHLHzquYKrU6qZ8lolCIN0Rh6cP0Q3U6I6IXILYOQI513hJaSKAorFpuHXJNfVlpRtmYBk1Su1obZr5dnKAO+L10Hrj3WZW+E3qh6IszE37F6EB+68mGpvKm4eb9bFrlzrok7fvr0Kfv727dvWRmdVTJHw0qiiCUSZ6wCK+7XL/AcsgNyL74DQQ730sv78Su7+t/A36MdY0sW5o40ahslXr58aZ5HtZB8GH64m9EmMZ7FpYw4T6QnrZfgenrhFxaSiSGXtPnz57e9TkNZLvTjeqhr734CNtrK41L40sUQckmj1lGKQ0rC37x544r8eNXRpnVE3ZZY7zXo8NomiO0ZUCj2uHz58rbXoZ6gc0uA+F6ZeKS/jhRDUq8MKrTho9fEkihMmhxtBI1DxKFY9XLpVcSkfoi8JGnToZO5sU5aiDQIW716ddt7ZLYtMQlhECdBGXZZMWldY5BHm5xgAroWj4C0hbYkSc/jBmggIrXJWlZM6pSETsEPGqZOndr2uuuR5rF169a2HoHPdurUKZM4CO1WTPqaDaAd+GFGKdIQkxAn9RuEWcTRyN2KSUgiSgF5aWzPTeA/lN5rZubMmR2bE4SIC4nJoltgAV/dVefZm72AtctUCJU2CMJ327hxY9t7EHbkyJFseq+EJSY16RPo3Dkq1kkr7+q0bNmyDuLQcZBEPYmHVdOBiJyIlrRDq41YPWfXOxUysi5fvtyaj+2BpcnsUV/oSoEMOk2CQGlr4ckhBwaetBhjCwH0ZHtJROPJkyc7UjcYLDjmrH7ADTEBXFfOYmB0k9oYBOjJ8b4aOYSe7QkKcYhFlq3QYLQhSidNmtS2RATwy8YOM3EQJsUjKiaWZ+vZToUQgzhkHXudb/PW5YMHD9yZM2faPsMwoc7RciYJXbGuBqJ1UIGKKLv915jsvgtJxCZDubdXr165mzdvtr1Hz5LONA8jrUwKPqsmVesKa49S3Q4WxmRPUEYdTjgiUcfUwLx589ySJUva3oMkP6IYddq6HMS4o55xBJBUeRjzfa4Zdeg56QZ43LhxoyPo7Lf1kNt7oO8wWAbNwaYjIv5lhyS7kRf96dvm5Jah8vfvX3flyhX35cuX6HfzFHOToS1H4BenCaHvO8pr8iDuwoUL7tevX+b5ZdbBair0xkFIlFDlW4ZknEClsp/TzXyAKVOmmHWFVSbDNw1l1+4f90U6IY/q4V27dpnE9bJ+v87QEydjqx/UamVVPRG+mwkNTYN+9tjkwzEx+atCm/X9WvWtDtAb68Wy9LXa1UmvCDDIpPkyOQ5ZwSzJ4jMrvFcr0rSjOUh+GcT4LSg5ugkW1Io0/SCDQBojh0hPlaJdah+tkVYrnTZowP8iq1F1TgMBBauufyB33x1v+NWFYmT5KmppgHC+NkAgbmRkpD3yn9QIseXymoTQFGQmIOKTxiZIWpvAatenVqRVXf2nTrAWMsPnKrMZHz6bJq5jvce6QK8J1cQNgKxlJapMPdZSR64/UivS9NztpkVEdKcrs5alhhWP9NeqlfWopzhZScI6QxseegZRGeg5a8C3Re1Mfl1ScP36ddcUaMuv24iOJtz7sbUjTS4qBvKmstYJoUauiuD3k5qhyr7QdUHMeCgLa1Ear9NquemdXgmum4fvJ6w1lqsuDhNrg1qSpleJK7K3TF0Q2jSd94uSZ60kK1e3qyVpQK6PVWXp2/FC3mp6jBhKKOiY2h3gtUV64TWM6wDETRPLDfSakXmH3w8g9Jlug8ZtTt4kVF0kLUYYmCCtD/DrQ5YhMGbA9L3ucdjh0y8kOHW5gU/VEEmJTcL4Pz/f7mgoAbYkAAAAAElFTkSuQmCC"]
+    }
+  ]
+}'
+</code></pre>
+<h5 id="response_17">Response</h5>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llava",
+  "created_at": "2023-12-13T22:42:50.203334Z",
+  "message": {
+    "role": "assistant",
+    "content": " The image features a cute, little pig with an angry facial expression. It's wearing a heart on its shirt and is waving in the air. This scene appears to be part of a drawing or sketching project.",
+    "images": null
+  },
+  "done": true,
+  "total_duration": 1668506709,
+  "load_duration": 1986209,
+  "prompt_eval_count": 26,
+  "prompt_eval_duration": 359682000,
+  "eval_count": 83,
+  "eval_duration": 1303285000
+}
+</code></pre>
+<h4 id="chat-request-reproducible-outputs">Chat request (Reproducible outputs)</h4>
+<h5 id="request_19">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/chat -d '{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Hello!"
+    }
+  ],
+  "options": {
+    "seed": 101,
+    "temperature": 0
+  }
+}'
+</code></pre>
+<h5 id="response_18">Response</h5>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2023-12-12T14:13:43.416799Z",
+  "message": {
+    "role": "assistant",
+    "content": "Hello! How are you today?"
+  },
+  "done": true,
+  "total_duration": 5191566416,
+  "load_duration": 2154458,
+  "prompt_eval_count": 26,
+  "prompt_eval_duration": 383809000,
+  "eval_count": 298,
+  "eval_duration": 4799921000
+}
+</code></pre>
+<h4 id="chat-request-with-tools">Chat request (with tools)</h4>
+<h5 id="request_20">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/chat -d '{
+  "model": "llama3.2",
+  "messages": [
+    {
+      "role": "user",
+      "content": "What is the weather today in Paris?"
+    }
+  ],
+  "stream": false,
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_current_weather",
+        "description": "Get the current weather for a location",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "description": "The location to get the weather for, e.g. San Francisco, CA"
+            },
+            "format": {
+              "type": "string",
+              "description": "The format to return the weather in, e.g. 'celsius' or 'fahrenheit'",
+              "enum": ["celsius", "fahrenheit"]
+            }
+          },
+          "required": ["location", "format"]
+        }
+      }
+    }
+  ]
+}'
+</code></pre>
+<h5 id="response_19">Response</h5>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at": "2024-07-22T20:33:28.123648Z",
+  "message": {
+    "role": "assistant",
+    "content": "",
+    "tool_calls": [
+      {
+        "function": {
+          "name": "get_current_weather",
+          "arguments": {
+            "format": "celsius",
+            "location": "Paris, FR"
+          }
+        }
+      }
+    ]
+  },
+  "done_reason": "stop",
+  "done": true,
+  "total_duration": 885095291,
+  "load_duration": 3753500,
+  "prompt_eval_count": 122,
+  "prompt_eval_duration": 328493000,
+  "eval_count": 33,
+  "eval_duration": 552222000
+}
+</code></pre>
+<h4 id="load-a-model_1">Load a model</h4>
+<p>If the messages array is empty, the model will be loaded into memory.</p>
+<h5 id="request_21">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/chat -d '{
+  "model": "llama3.2",
+  "messages": []
+}'
+</code></pre>
+<h5 id="response_20">Response</h5>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at":"2024-09-12T21:17:29.110811Z",
+  "message": {
+    "role": "assistant",
+    "content": ""
+  },
+  "done_reason": "load",
+  "done": true
+}
+</code></pre>
+<h4 id="unload-a-model_1">Unload a model</h4>
+<p>If the messages array is empty and the <code>keep_alive</code> parameter is set to <code>0</code>, a model will be unloaded from memory.</p>
+<h5 id="request_22">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/chat -d '{
+  "model": "llama3.2",
+  "messages": [],
+  "keep_alive": 0
+}'
+</code></pre>
+<h5 id="response_21">Response</h5>
+<p>A single JSON object is returned:</p>
+<pre class="codehilite"><code class="language-json">{
+  "model": "llama3.2",
+  "created_at":"2024-09-12T21:33:17.547535Z",
+  "message": {
+    "role": "assistant",
+    "content": ""
+  },
+  "done_reason": "unload",
+  "done": true
+}
+</code></pre>
+<h2 id="create-a-model">Create a Model</h2>
+<pre class="codehilite"><code>POST /api/create
+</code></pre>
+<p>Create a model from:
+ * another model;
+ * a safetensors directory; or
+ * a GGUF file.</p>
+<p>If you are creating a model from a safetensors directory or from a GGUF file, you must <a href="#create-a-blob">create a blob</a> for each of the files and then use the file name and SHA256 digest associated with each blob in the <code>files</code> field.</p>
+<h3 id="parameters_2">Parameters</h3>
+<ul>
+<li><code>model</code>: name of the model to create</li>
+<li><code>from</code>: (optional) name of an existing model to create the new model from</li>
+<li><code>files</code>: (optional) a dictionary of file names to SHA256 digests of blobs to create the model from</li>
+<li><code>adapters</code>: (optional) a dictionary of file names to SHA256 digests of blobs for LORA adapters</li>
+<li><code>template</code>: (optional) the prompt template for the model</li>
+<li><code>license</code>: (optional) a string or list of strings containing the license or licenses for the model</li>
+<li><code>system</code>: (optional) a string containing the system prompt for the model</li>
+<li><code>parameters</code>: (optional) a dictionary of parameters for the model (see <a href="./modelfile.md#valid-parameters-and-values">Modelfile</a> for a list of parameters)</li>
+<li><code>messages</code>: (optional) a list of message objects used to create a conversation</li>
+<li><code>stream</code>: (optional) if <code>false</code> the response will be returned as a single response object, rather than a stream of objects</li>
+<li><code>quantize</code> (optional): quantize a non-quantized (e.g. float16) model</li>
+</ul>
+<h4 id="quantization-types">Quantization types</h4>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th style="text-align: center;">Recommended</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>q4_K_M</td>
+<td style="text-align: center;">*</td>
+</tr>
+<tr>
+<td>q4_K_S</td>
+<td style="text-align: center;"></td>
+</tr>
+<tr>
+<td>q8_0</td>
+<td style="text-align: center;">*</td>
+</tr>
+</tbody>
+</table>
+<h3 id="examples_2">Examples</h3>
+<h4 id="create-a-new-model">Create a new model</h4>
+<p>Create a new model from an existing model.</p>
+<h5 id="request_23">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/create -d '{
+  "model": "mario",
+  "from": "llama3.2",
+  "system": "You are Mario from Super Mario Bros."
+}'
+</code></pre>
+<h5 id="response_22">Response</h5>
+<p>A stream of JSON objects is returned:</p>
+<pre class="codehilite"><code class="language-json">{"status":"reading model metadata"}
+{"status":"creating system layer"}
+{"status":"using already created layer sha256:22f7f8ef5f4c791c1b03d7eb414399294764d7cc82c7e94aa81a1feb80a983a2"}
+{"status":"using already created layer sha256:8c17c2ebb0ea011be9981cc3922db8ca8fa61e828c5d3f44cb6ae342bf80460b"}
+{"status":"using already created layer sha256:7c23fb36d80141c4ab8cdbb61ee4790102ebd2bf7aeff414453177d4f2110e5d"}
+{"status":"using already created layer sha256:2e0493f67d0c8c9c68a8aeacdf6a38a2151cb3c4c1d42accf296e19810527988"}
+{"status":"using already created layer sha256:2759286baa875dc22de5394b4a925701b1896a7e3f8e53275c36f75a877a82c9"}
+{"status":"writing layer sha256:df30045fe90f0d750db82a058109cecd6d4de9c90a3d75b19c09e5f64580bb42"}
+{"status":"writing layer sha256:f18a68eb09bf925bb1b669490407c1b1251c5db98dc4d3d81f3088498ea55690"}
+{"status":"writing manifest"}
+{"status":"success"}
+</code></pre>
+<h4 id="quantize-a-model">Quantize a model</h4>
+<p>Quantize a non-quantized model.</p>
+<h5 id="request_24">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/create -d '{
+  "model": "llama3.2:quantized",
+  "from": "llama3.2:3b-instruct-fp16",
+  "quantize": "q4_K_M"
+}'
+</code></pre>
+<h5 id="response_23">Response</h5>
+<p>A stream of JSON objects is returned:</p>
+<pre class="codehilite"><code class="language-json">{"status":"quantizing F16 model to Q4_K_M","digest":"0","total":6433687776,"completed":12302}
+{"status":"quantizing F16 model to Q4_K_M","digest":"0","total":6433687776,"completed":6433687552}
+{"status":"verifying conversion"}
+{"status":"creating new layer sha256:fb7f4f211b89c6c4928ff4ddb73db9f9c0cfca3e000c3e40d6cf27ddc6ca72eb"}
+{"status":"using existing layer sha256:966de95ca8a62200913e3f8bfbf84c8494536f1b94b49166851e76644e966396"}
+{"status":"using existing layer sha256:fcc5a6bec9daf9b561a68827b67ab6088e1dba9d1fa2a50d7bbcc8384e0a265d"}
+{"status":"using existing layer sha256:a70ff7e570d97baaf4e62ac6e6ad9975e04caa6d900d3742d37698494479e0cd"}
+{"status":"using existing layer sha256:56bb8bd477a519ffa694fc449c2413c6f0e1d3b1c88fa7e3c9d88d3ae49d4dcb"}
+{"status":"writing manifest"}
+{"status":"success"}
+</code></pre>
+<h4 id="create-a-model-from-gguf">Create a model from GGUF</h4>
+<p>Create a model from a GGUF file. The <code>files</code> parameter should be filled out with the file name and SHA256 digest of the GGUF file you wish to use. Use <a href="#push-a-blob">/api/blobs/:digest</a> to push the GGUF file to the server before calling this API.</p>
+<h5 id="request_25">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/create -d '{
+  "model": "my-gguf-model",
+  "files": {
+    "test.gguf": "sha256:432f310a77f4650a88d0fd59ecdd7cebed8d684bafea53cbff0473542964f0c3"
+  }
+}'
+</code></pre>
+<h5 id="response_24">Response</h5>
+<p>A stream of JSON objects is returned:</p>
+<pre class="codehilite"><code class="language-json">{"status":"parsing GGUF"}
+{"status":"using existing layer sha256:432f310a77f4650a88d0fd59ecdd7cebed8d684bafea53cbff0473542964f0c3"}
+{"status":"writing manifest"}
+{"status":"success"}
+</code></pre>
+<h4 id="create-a-model-from-a-safetensors-directory">Create a model from a Safetensors directory</h4>
+<p>The <code>files</code> parameter should include a dictionary of files for the safetensors model which includes the file names and SHA256 digest of each file. Use <a href="#push-a-blob">/api/blobs/:digest</a> to first push each of the files to the server before calling this API. Files will remain in the cache until the Ollama server is restarted.</p>
+<h5 id="request_26">Request</h5>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/create -d '{
+  "model": "fred",
+  "files": {
+    "config.json": "sha256:dd3443e529fb2290423a0c65c2d633e67b419d273f170259e27297219828e389",
+    "generation_config.json": "sha256:88effbb63300dbbc7390143fbbdd9d9fa50587b37e8bfd16c8c90d4970a74a36",
+    "special_tokens_map.json": "sha256:b7455f0e8f00539108837bfa586c4fbf424e31f8717819a6798be74bef813d05",
+    "tokenizer.json": "sha256:bbc1904d35169c542dffbe1f7589a5994ec7426d9e5b609d07bab876f32e97ab",
+    "tokenizer_config.json": "sha256:24e8a6dc2547164b7002e3125f10b415105644fcf02bf9ad8b674c87b1eaaed6",
+    "model.safetensors": "sha256:1ff795ff6a07e6a68085d206fb84417da2f083f68391c2843cd2b8ac6df8538f"
+  }
+}'
+</code></pre>
+<h5 id="response_25">Response</h5>
+<p>A stream of JSON objects is returned:</p>
+<pre class="codehilite"><code class="language-shell">{"status":"converting model"}
+{"status":"creating new layer sha256:05ca5b813af4a53d2c2922933936e398958855c44ee534858fcfd830940618b6"}
+{"status":"using autodetected template llama3-instruct"}
+{"status":"using existing layer sha256:56bb8bd477a519ffa694fc449c2413c6f0e1d3b1c88fa7e3c9d88d3ae49d4dcb"}
+{"status":"writing manifest"}
+{"status":"success"}
+</code></pre>
+<h2 id="check-if-a-blob-exists">Check if a Blob Exists</h2>
+<pre class="codehilite"><code class="language-shell">HEAD /api/blobs/:digest
+</code></pre>
+<p>Ensures that the file blob (Binary Large Object) used with create a model exists on the server. This checks your Ollama server and not ollama.com.</p>
+<h3 id="query-parameters">Query Parameters</h3>
+<ul>
+<li><code>digest</code>: the SHA256 digest of the blob</li>
+</ul>
+<h3 id="examples_3">Examples</h3>
+<h4 id="request_27">Request</h4>
+<pre class="codehilite"><code class="language-shell">curl -I http://localhost:11434/api/blobs/sha256:29fdb92e57cf0827ded04ae6461b5931d01fa595843f55d36f5b275a52087dd2
+</code></pre>
+<h4 id="response_26">Response</h4>
+<p>Return 200 OK if the blob exists, 404 Not Found if it does not.</p>
+<h2 id="push-a-blob">Push a Blob</h2>
+<pre class="codehilite"><code>POST /api/blobs/:digest
+</code></pre>
+<p>Push a file to the Ollama server to create a "blob" (Binary Large Object).</p>
+<h3 id="query-parameters_1">Query Parameters</h3>
+<ul>
+<li><code>digest</code>: the expected SHA256 digest of the file</li>
+</ul>
+<h3 id="examples_4">Examples</h3>
+<h4 id="request_28">Request</h4>
+<pre class="codehilite"><code class="language-shell">curl -T model.gguf -X POST http://localhost:11434/api/blobs/sha256:29fdb92e57cf0827ded04ae6461b5931d01fa595843f55d36f5b275a52087dd2
+</code></pre>
+<h4 id="response_27">Response</h4>
+<p>Return 201 Created if the blob was successfully created, 400 Bad Request if the digest used is not expected.</p>
+<h2 id="list-local-models">List Local Models</h2>
+<pre class="codehilite"><code>GET /api/tags
+</code></pre>
+<p>List models that are available locally.</p>
+<h3 id="examples_5">Examples</h3>
+<h4 id="request_29">Request</h4>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/tags
+</code></pre>
+<h4 id="response_28">Response</h4>
+<p>A single JSON object will be returned.</p>
+<pre class="codehilite"><code class="language-json">{
+  "models": [
+    {
+      "name": "deepseek-r1:latest",
+      "model": "deepseek-r1:latest",
+      "modified_at": "2025-05-10T08:06:48.639712648-07:00",
+      "size": 4683075271,
+      "digest": "0a8c266910232fd3291e71e5ba1e058cc5af9d411192cf88b6d30e92b6e73163",
+      "details": {
+        "parent_model": "",
+        "format": "gguf",
+        "family": "qwen2",
+        "families": [
+          "qwen2"
+        ],
+        "parameter_size": "7.6B",
+        "quantization_level": "Q4_K_M"
+      }
+    },
+    {
+      "name": "llama3.2:latest",
+      "model": "llama3.2:latest",
+      "modified_at": "2025-05-04T17:37:44.706015396-07:00",
+      "size": 2019393189,
+      "digest": "a80c4f17acd55265feec403c7aef86be0c25983ab279d83f3bcd3abbcb5b8b72",
+      "details": {
+        "parent_model": "",
+        "format": "gguf",
+        "family": "llama",
+        "families": [
+          "llama"
+        ],
+        "parameter_size": "3.2B",
+        "quantization_level": "Q4_K_M"
+      }
+    }
+  ]
+}
+</code></pre>
+<h2 id="show-model-information">Show Model Information</h2>
+<pre class="codehilite"><code>POST /api/show
+</code></pre>
+<p>Show information about a model including details, modelfile, template, parameters, license, system prompt.</p>
+<h3 id="parameters_3">Parameters</h3>
+<ul>
+<li><code>model</code>: name of the model to show</li>
+<li><code>verbose</code>: (optional) if set to <code>true</code>, returns full data for verbose response fields</li>
+</ul>
+<h3 id="examples_6">Examples</h3>
+<h4 id="request_30">Request</h4>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/show -d '{
+  "model": "llava"
+}'
+</code></pre>
+<h4 id="response_29">Response</h4>
+<pre class="codehilite"><code class="language-json5">{
+  "modelfile": "# Modelfile generated by \"ollama show\"\n# To build a new Modelfile based on this one, replace the FROM line with:\n# FROM llava:latest\n\nFROM /Users/matt/.ollama/models/blobs/sha256:200765e1283640ffbd013184bf496e261032fa75b99498a9613be4e94d63ad52\nTEMPLATE \"\"\"{{ .System }}\nUSER: {{ .Prompt }}\nASSISTANT: \"\"\"\nPARAMETER num_ctx 4096\nPARAMETER stop \"\u003c/s\u003e\"\nPARAMETER stop \"USER:\"\nPARAMETER stop \"ASSISTANT:\"",
+  "parameters": "num_keep                       24\nstop                           \"&lt;|start_header_id|&gt;\"\nstop                           \"&lt;|end_header_id|&gt;\"\nstop                           \"&lt;|eot_id|&gt;\"",
+  "template": "{{ if .System }}&lt;|start_header_id|&gt;system&lt;|end_header_id|&gt;\n\n{{ .System }}&lt;|eot_id|&gt;{{ end }}{{ if .Prompt }}&lt;|start_header_id|&gt;user&lt;|end_header_id|&gt;\n\n{{ .Prompt }}&lt;|eot_id|&gt;{{ end }}&lt;|start_header_id|&gt;assistant&lt;|end_header_id|&gt;\n\n{{ .Response }}&lt;|eot_id|&gt;",
+  "details": {
+    "parent_model": "",
+    "format": "gguf",
+    "family": "llama",
+    "families": [
+      "llama"
+    ],
+    "parameter_size": "8.0B",
+    "quantization_level": "Q4_0"
+  },
+  "model_info": {
+    "general.architecture": "llama",
+    "general.file_type": 2,
+    "general.parameter_count": 8030261248,
+    "general.quantization_version": 2,
+    "llama.attention.head_count": 32,
+    "llama.attention.head_count_kv": 8,
+    "llama.attention.layer_norm_rms_epsilon": 0.00001,
+    "llama.block_count": 32,
+    "llama.context_length": 8192,
+    "llama.embedding_length": 4096,
+    "llama.feed_forward_length": 14336,
+    "llama.rope.dimension_count": 128,
+    "llama.rope.freq_base": 500000,
+    "llama.vocab_size": 128256,
+    "tokenizer.ggml.bos_token_id": 128000,
+    "tokenizer.ggml.eos_token_id": 128009,
+    "tokenizer.ggml.merges": [],            // populates if `verbose=true`
+    "tokenizer.ggml.model": "gpt2",
+    "tokenizer.ggml.pre": "llama-bpe",
+    "tokenizer.ggml.token_type": [],        // populates if `verbose=true`
+    "tokenizer.ggml.tokens": []             // populates if `verbose=true`
+  },
+  "capabilities": [
+    "completion",
+    "vision"
+  ],
+}
+</code></pre>
+<h2 id="copy-a-model">Copy a Model</h2>
+<pre class="codehilite"><code>POST /api/copy
+</code></pre>
+<p>Copy a model. Creates a model with another name from an existing model.</p>
+<h3 id="examples_7">Examples</h3>
+<h4 id="request_31">Request</h4>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/copy -d '{
+  "source": "llama3.2",
+  "destination": "llama3-backup"
+}'
+</code></pre>
+<h4 id="response_30">Response</h4>
+<p>Returns a 200 OK if successful, or a 404 Not Found if the source model doesn't exist.</p>
+<h2 id="delete-a-model">Delete a Model</h2>
+<pre class="codehilite"><code>DELETE /api/delete
+</code></pre>
+<p>Delete a model and its data.</p>
+<h3 id="parameters_4">Parameters</h3>
+<ul>
+<li><code>model</code>: model name to delete</li>
+</ul>
+<h3 id="examples_8">Examples</h3>
+<h4 id="request_32">Request</h4>
+<pre class="codehilite"><code class="language-shell">curl -X DELETE http://localhost:11434/api/delete -d '{
+  "model": "llama3:13b"
+}'
+</code></pre>
+<h4 id="response_31">Response</h4>
+<p>Returns a 200 OK if successful, 404 Not Found if the model to be deleted doesn't exist.</p>
+<h2 id="pull-a-model">Pull a Model</h2>
+<pre class="codehilite"><code>POST /api/pull
+</code></pre>
+<p>Download a model from the ollama library. Cancelled pulls are resumed from where they left off, and multiple calls will share the same download progress.</p>
+<h3 id="parameters_5">Parameters</h3>
+<ul>
+<li><code>model</code>: name of the model to pull</li>
+<li><code>insecure</code>: (optional) allow insecure connections to the library. Only use this if you are pulling from your own library during development.</li>
+<li><code>stream</code>: (optional) if <code>false</code> the response will be returned as a single response object, rather than a stream of objects</li>
+</ul>
+<h3 id="examples_9">Examples</h3>
+<h4 id="request_33">Request</h4>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/pull -d '{
+  "model": "llama3.2"
+}'
+</code></pre>
+<h4 id="response_32">Response</h4>
+<p>If <code>stream</code> is not specified, or set to <code>true</code>, a stream of JSON objects is returned:</p>
+<p>The first object is the manifest:</p>
+<pre class="codehilite"><code class="language-json">{
+  "status": "pulling manifest"
+}
+</code></pre>
+<p>Then there is a series of downloading responses. Until any of the download is completed, the <code>completed</code> key may not be included. The number of files to be downloaded depends on the number of layers specified in the manifest.</p>
+<pre class="codehilite"><code class="language-json">{
+  "status": "downloading digestname",
+  "digest": "digestname",
+  "total": 2142590208,
+  "completed": 241970
+}
+</code></pre>
+<p>After all the files are downloaded, the final responses are:</p>
+<pre class="codehilite"><code class="language-json">{
+    "status": "verifying sha256 digest"
+}
+{
+    "status": "writing manifest"
+}
+{
+    "status": "removing any unused layers"
+}
+{
+    "status": "success"
+}
+</code></pre>
+<p>if <code>stream</code> is set to false, then the response is a single JSON object:</p>
+<pre class="codehilite"><code class="language-json">{
+  "status": "success"
+}
+</code></pre>
+<h2 id="push-a-model">Push a Model</h2>
+<pre class="codehilite"><code>POST /api/push
+</code></pre>
+<p>Upload a model to a model library. Requires registering for ollama.ai and adding a public key first.</p>
+<h3 id="parameters_6">Parameters</h3>
+<ul>
+<li><code>model</code>: name of the model to push in the form of <code>&lt;namespace&gt;/&lt;model&gt;:&lt;tag&gt;</code></li>
+<li><code>insecure</code>: (optional) allow insecure connections to the library. Only use this if you are pushing to your library during development.</li>
+<li><code>stream</code>: (optional) if <code>false</code> the response will be returned as a single response object, rather than a stream of objects</li>
+</ul>
+<h3 id="examples_10">Examples</h3>
+<h4 id="request_34">Request</h4>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/push -d '{
+  "model": "mattw/pygmalion:latest"
+}'
+</code></pre>
+<h4 id="response_33">Response</h4>
+<p>If <code>stream</code> is not specified, or set to <code>true</code>, a stream of JSON objects is returned:</p>
+<pre class="codehilite"><code class="language-json">{ "status": "retrieving manifest" }
+</code></pre>
+<p>and then:</p>
+<pre class="codehilite"><code class="language-json">{
+  "status": "starting upload",
+  "digest": "sha256:bc07c81de745696fdf5afca05e065818a8149fb0c77266fb584d9b2cba3711ab",
+  "total": 1928429856
+}
+</code></pre>
+<p>Then there is a series of uploading responses:</p>
+<pre class="codehilite"><code class="language-json">{
+  "status": "starting upload",
+  "digest": "sha256:bc07c81de745696fdf5afca05e065818a8149fb0c77266fb584d9b2cba3711ab",
+  "total": 1928429856
+}
+</code></pre>
+<p>Finally, when the upload is complete:</p>
+<pre class="codehilite"><code class="language-json">{"status":"pushing manifest"}
+{"status":"success"}
+</code></pre>
+<p>If <code>stream</code> is set to <code>false</code>, then the response is a single JSON object:</p>
+<pre class="codehilite"><code class="language-json">{ "status": "success" }
+</code></pre>
+<h2 id="generate-embeddings">Generate Embeddings</h2>
+<pre class="codehilite"><code>POST /api/embed
+</code></pre>
+<p>Generate embeddings from a model</p>
+<h3 id="parameters_7">Parameters</h3>
+<ul>
+<li><code>model</code>: name of model to generate embeddings from</li>
+<li><code>input</code>: text or list of text to generate embeddings for</li>
+</ul>
+<p>Advanced parameters:</p>
+<ul>
+<li><code>truncate</code>: truncates the end of each input to fit within context length. Returns error if <code>false</code> and context length is exceeded. Defaults to <code>true</code></li>
+<li><code>options</code>: additional model parameters listed in the documentation for the <a href="./modelfile.md#valid-parameters-and-values">Modelfile</a> such as <code>temperature</code></li>
+<li><code>keep_alive</code>: controls how long the model will stay loaded into memory following the request (default: <code>5m</code>)</li>
+</ul>
+<h3 id="examples_11">Examples</h3>
+<h4 id="request_35">Request</h4>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/embed -d '{
+  "model": "all-minilm",
+  "input": "Why is the sky blue?"
+}'
+</code></pre>
+<h4 id="response_34">Response</h4>
+<pre class="codehilite"><code class="language-json">{
+  "model": "all-minilm",
+  "embeddings": [[
+    0.010071029, -0.0017594862, 0.05007221, 0.04692972, 0.054916814,
+    0.008599704, 0.105441414, -0.025878139, 0.12958129, 0.031952348
+  ]],
+  "total_duration": 14143917,
+  "load_duration": 1019500,
+  "prompt_eval_count": 8
+}
+</code></pre>
+<h4 id="request-multiple-input">Request (Multiple input)</h4>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/embed -d '{
+  "model": "all-minilm",
+  "input": ["Why is the sky blue?", "Why is the grass green?"]
+}'
+</code></pre>
+<h4 id="response_35">Response</h4>
+<pre class="codehilite"><code class="language-json">{
+  "model": "all-minilm",
+  "embeddings": [[
+    0.010071029, -0.0017594862, 0.05007221, 0.04692972, 0.054916814,
+    0.008599704, 0.105441414, -0.025878139, 0.12958129, 0.031952348
+  ],[
+    -0.0098027075, 0.06042469, 0.025257962, -0.006364387, 0.07272725,
+    0.017194884, 0.09032035, -0.051705178, 0.09951512, 0.09072481
+  ]]
+}
+</code></pre>
+<h2 id="list-running-models">List Running Models</h2>
+<pre class="codehilite"><code>GET /api/ps
+</code></pre>
+<p>List models that are currently loaded into memory.</p>
+<h4 id="examples_12">Examples</h4>
+<h3 id="request_36">Request</h3>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/ps
+</code></pre>
+<h4 id="response_36">Response</h4>
+<p>A single JSON object will be returned.</p>
+<pre class="codehilite"><code class="language-json">{
+  "models": [
+    {
+      "name": "mistral:latest",
+      "model": "mistral:latest",
+      "size": 5137025024,
+      "digest": "2ae6f6dd7a3dd734790bbbf58b8909a606e0e7e97e94b7604e0aa7ae4490e6d8",
+      "details": {
+        "parent_model": "",
+        "format": "gguf",
+        "family": "llama",
+        "families": [
+          "llama"
+        ],
+        "parameter_size": "7.2B",
+        "quantization_level": "Q4_0"
+      },
+      "expires_at": "2024-06-04T14:38:31.83753-07:00",
+      "size_vram": 5137025024
+    }
+  ]
+}
+</code></pre>
+<h2 id="generate-embedding">Generate Embedding</h2>
+<blockquote>
+<p>Note: this endpoint has been superseded by <code>/api/embed</code></p>
+</blockquote>
+<pre class="codehilite"><code>POST /api/embeddings
+</code></pre>
+<p>Generate embeddings from a model</p>
+<h3 id="parameters_8">Parameters</h3>
+<ul>
+<li><code>model</code>: name of model to generate embeddings from</li>
+<li><code>prompt</code>: text to generate embeddings for</li>
+</ul>
+<p>Advanced parameters:</p>
+<ul>
+<li><code>options</code>: additional model parameters listed in the documentation for the <a href="./modelfile.md#valid-parameters-and-values">Modelfile</a> such as <code>temperature</code></li>
+<li><code>keep_alive</code>: controls how long the model will stay loaded into memory following the request (default: <code>5m</code>)</li>
+</ul>
+<h3 id="examples_13">Examples</h3>
+<h4 id="request_37">Request</h4>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/embeddings -d '{
+  "model": "all-minilm",
+  "prompt": "Here is an article about llamas..."
+}'
+</code></pre>
+<h4 id="response_37">Response</h4>
+<pre class="codehilite"><code class="language-json">{
+  "embedding": [
+    0.5670403838157654, 0.009260174818336964, 0.23178744316101074, -0.2916173040866852, -0.8924556970596313,
+    0.8785552978515625, -0.34576427936553955, 0.5742510557174683, -0.04222835972905159, -0.137906014919281
+  ]
+}
+</code></pre>
+<h2 id="version">Version</h2>
+<pre class="codehilite"><code>GET /api/version
+</code></pre>
+<p>Retrieve the Ollama version</p>
+<h3 id="examples_14">Examples</h3>
+<h4 id="request_38">Request</h4>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/version
+</code></pre>
+<h4 id="response_38">Response</h4>
+<pre class="codehilite"><code class="language-json">{
+  "version": "0.5.1"
+}
+</code></pre>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="development.md">
+                <div class="file-header">File: development.md | Repository: ollama/ollama</div>
+                <h2>development.md</h2>
+                
+
+
+
+<h1 id="development">Development</h1>
+<p>Install prerequisites:</p>
+<ul>
+<li><a href="https://go.dev/doc/install">Go</a></li>
+<li>C/C++ Compiler e.g. Clang on macOS, <a href="https://github.com/jmeubank/tdm-gcc/releases/latest">TDM-GCC</a> (Windows amd64) or <a href="https://github.com/mstorsjo/llvm-mingw">llvm-mingw</a> (Windows arm64), GCC/Clang on Linux.</li>
+</ul>
+<p>Then build and run Ollama from the root directory of the repository:</p>
+<pre class="codehilite"><code class="language-shell">go run . serve
+</code></pre>
+<h2 id="macos-apple-silicon">macOS (Apple Silicon)</h2>
+<p>macOS Apple Silicon supports Metal which is built-in to the Ollama binary. No additional steps are required.</p>
+<h2 id="macos-intel">macOS (Intel)</h2>
+<p>Install prerequisites:</p>
+<ul>
+<li><a href="https://cmake.org/download/">CMake</a> or <code>brew install cmake</code></li>
+</ul>
+<p>Then, configure and build the project:</p>
+<pre class="codehilite"><code class="language-shell">cmake -B build
+cmake --build build
+</code></pre>
+<p>Lastly, run Ollama:</p>
+<pre class="codehilite"><code class="language-shell">go run . serve
+</code></pre>
+<h2 id="windows">Windows</h2>
+<p>Install prerequisites:</p>
+<ul>
+<li><a href="https://cmake.org/download/">CMake</a></li>
+<li><a href="https://visualstudio.microsoft.com/downloads/">Visual Studio 2022</a> including the Native Desktop Workload</li>
+<li>(Optional) AMD GPU support<ul>
+<li><a href="https://rocm.docs.amd.com/en/latest/">ROCm</a></li>
+<li><a href="https://github.com/ninja-build/ninja/releases">Ninja</a></li>
+</ul>
+</li>
+<li>(Optional) NVIDIA GPU support<ul>
+<li><a href="https://developer.nvidia.com/cuda-downloads?target_os=Windows&amp;target_arch=x86_64&amp;target_version=11&amp;target_type=exe_network">CUDA SDK</a></li>
+</ul>
+</li>
+</ul>
+<p>Then, configure and build the project:</p>
+<pre class="codehilite"><code class="language-shell">cmake -B build
+cmake --build build --config Release
+</code></pre>
+<blockquote>
+<p>[!IMPORTANT]
+Building for ROCm requires additional flags:
+<code>cmake -B build -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++
+cmake --build build --config Release</code></p>
+</blockquote>
+<p>Lastly, run Ollama:</p>
+<pre class="codehilite"><code class="language-shell">go run . serve
+</code></pre>
+<h2 id="windows-arm">Windows (ARM)</h2>
+<p>Windows ARM does not support additional acceleration libraries at this time.  Do not use cmake, simply <code>go run</code> or <code>go build</code>.</p>
+<h2 id="linux">Linux</h2>
+<p>Install prerequisites:</p>
+<ul>
+<li><a href="https://cmake.org/download/">CMake</a> or <code>sudo apt install cmake</code> or <code>sudo dnf install cmake</code></li>
+<li>(Optional) AMD GPU support<ul>
+<li><a href="https://rocm.docs.amd.com/projects/install-on-linux/en/latest/install/quick-start.html">ROCm</a></li>
+</ul>
+</li>
+<li>(Optional) NVIDIA GPU support<ul>
+<li><a href="https://developer.nvidia.com/cuda-downloads">CUDA SDK</a></li>
+</ul>
+</li>
+</ul>
+<blockquote>
+<p>[!IMPORTANT]
+Ensure prerequisites are in <code>PATH</code> before running CMake.</p>
+</blockquote>
+<p>Then, configure and build the project:</p>
+<pre class="codehilite"><code class="language-shell">cmake -B build
+cmake --build build
+</code></pre>
+<p>Lastly, run Ollama:</p>
+<pre class="codehilite"><code class="language-shell">go run . serve
+</code></pre>
+<h2 id="docker">Docker</h2>
+<pre class="codehilite"><code class="language-shell">docker build .
+</code></pre>
+<h3 id="rocm">ROCm</h3>
+<pre class="codehilite"><code class="language-shell">docker build --build-arg FLAVOR=rocm .
+</code></pre>
+<h2 id="running-tests">Running tests</h2>
+<p>To run tests, use <code>go test</code>:</p>
+<pre class="codehilite"><code class="language-shell">go test ./...
+</code></pre>
+<blockquote>
+<p>NOTE: In rare circumstances, you may need to change a package using the new
+"synctest" package in go1.24.</p>
+<p>If you do not have the "synctest" package enabled, you will not see build or
+test failures resulting from your change(s), if any, locally, but CI will
+break.</p>
+<p>If you see failures in CI, you can either keep pushing changes to see if the
+CI build passes, or you can enable the "synctest" package locally to see the
+failures before pushing.</p>
+<p>To enable the "synctest" package for testing, run the following command:</p>
+<p><code>shell
+GOEXPERIMENT=synctest go test ./...</code></p>
+<p>If you wish to enable synctest for all go commands, you can set the
+<code>GOEXPERIMENT</code> environment variable in your shell profile or by using:</p>
+<p><code>shell
+go env -w GOEXPERIMENT=synctest</code></p>
+<p>Which will enable the "synctest" package for all go commands without needing
+to set it for all shell sessions.</p>
+<p>The synctest package is not required for production builds.</p>
+</blockquote>
+<h2 id="library-detection">Library detection</h2>
+<p>Ollama looks for acceleration libraries in the following paths relative to the <code>ollama</code> executable:</p>
+<ul>
+<li><code>./lib/ollama</code> (Windows)</li>
+<li><code>../lib/ollama</code> (Linux)</li>
+<li><code>.</code> (macOS)</li>
+<li><code>build/lib/ollama</code> (for development)</li>
+</ul>
+<p>If the libraries are not found, Ollama will not run with any acceleration libraries.</p>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="docker.md">
+                <div class="file-header">File: docker.md | Repository: ollama/ollama</div>
+                <h2>docker.md</h2>
+                
+
+
+
+<h1 id="ollama-docker-image">Ollama Docker image</h1>
+<h3 id="cpu-only">CPU only</h3>
+<pre class="codehilite"><code class="language-shell">docker run -d -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+</code></pre>
+<h3 id="nvidia-gpu">Nvidia GPU</h3>
+<p>Install the <a href="https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#installation">NVIDIA Container Toolkit</a>.</p>
+<h4 id="install-with-apt">Install with Apt</h4>
+<ol>
+<li>
+<p>Configure the repository</p>
+<p><code>shell
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey \
+    | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list \
+    | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' \
+    | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+sudo apt-get update</code></p>
+</li>
+<li>
+<p>Install the NVIDIA Container Toolkit packages</p>
+<p><code>shell
+sudo apt-get install -y nvidia-container-toolkit</code></p>
+</li>
+</ol>
+<h4 id="install-with-yum-or-dnf">Install with Yum or Dnf</h4>
+<ol>
+<li>
+<p>Configure the repository</p>
+<p><code>shell
+curl -s -L https://nvidia.github.io/libnvidia-container/stable/rpm/nvidia-container-toolkit.repo \
+    | sudo tee /etc/yum.repos.d/nvidia-container-toolkit.repo</code></p>
+</li>
+<li>
+<p>Install the NVIDIA Container Toolkit packages</p>
+<p><code>shell
+sudo yum install -y nvidia-container-toolkit</code></p>
+</li>
+</ol>
+<h4 id="configure-docker-to-use-nvidia-driver">Configure Docker to use Nvidia driver</h4>
+<pre class="codehilite"><code class="language-shell">sudo nvidia-ctk runtime configure --runtime=docker
+sudo systemctl restart docker
+</code></pre>
+<h4 id="start-the-container">Start the container</h4>
+<pre class="codehilite"><code class="language-shell">docker run -d --gpus=all -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama
+</code></pre>
+<blockquote>
+<p>[!NOTE]<br/>
+If you're running on an NVIDIA JetPack system, Ollama can't automatically discover the correct JetPack version. Pass the environment variable JETSON_JETPACK=5 or JETSON_JETPACK=6 to the container to select version 5 or 6.</p>
+</blockquote>
+<h3 id="amd-gpu">AMD GPU</h3>
+<p>To run Ollama using Docker with AMD GPUs, use the <code>rocm</code> tag and the following command:</p>
+<pre class="codehilite"><code class="language-shell">docker run -d --device /dev/kfd --device /dev/dri -v ollama:/root/.ollama -p 11434:11434 --name ollama ollama/ollama:rocm
+</code></pre>
+<h3 id="run-model-locally">Run model locally</h3>
+<p>Now you can run a model:</p>
+<pre class="codehilite"><code class="language-shell">docker exec -it ollama ollama run llama3.2
+</code></pre>
+<h3 id="try-different-models">Try different models</h3>
+<p>More models can be found on the <a href="https://ollama.com/library">Ollama library</a>.</p>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="examples.md">
+                <div class="file-header">File: examples.md | Repository: ollama/ollama</div>
+                <h2>examples.md</h2>
+                
+
+
+
+<h1 id="examples">Examples</h1>
+<p>This directory contains different examples of using Ollama.</p>
+<h2 id="python-examples">Python examples</h2>
+<p>Ollama Python examples at <a href="https://github.com/ollama/ollama-python/tree/main/examples">ollama-python/examples</a></p>
+<h2 id="javascript-examples">JavaScript examples</h2>
+<p>Ollama JavaScript examples at <a href="https://github.com/ollama/ollama-js/tree/main/examples">ollama-js/examples</a></p>
+<h2 id="openai-compatibility-examples">OpenAI compatibility examples</h2>
+<p>Ollama OpenAI compatibility examples at <a href="../docs/openai.md">ollama/examples/openai</a></p>
+<h2 id="community-examples">Community examples</h2>
+<ul>
+<li><a href="https://python.langchain.com/docs/integrations/chat/ollama/">LangChain Ollama Python</a></li>
+<li><a href="https://js.langchain.com/docs/integrations/chat/ollama/">LangChain Ollama JS</a></li>
+</ul>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="faq.md">
+                <div class="file-header">File: faq.md | Repository: ollama/ollama</div>
+                <h2>faq.md</h2>
+                
+
+
+
+<h1 id="faq">FAQ</h1>
+<h2 id="how-can-i-upgrade-ollama">How can I upgrade Ollama?</h2>
+<p>Ollama on macOS and Windows will automatically download updates. Click on the taskbar or menubar item and then click "Restart to update" to apply the update. Updates can also be installed by downloading the latest version <a href="https://ollama.com/download/">manually</a>.</p>
+<p>On Linux, re-run the install script:</p>
+<pre class="codehilite"><code class="language-shell">curl -fsSL https://ollama.com/install.sh | sh
+</code></pre>
+<h2 id="how-can-i-view-the-logs">How can I view the logs?</h2>
+<p>Review the <a href="./troubleshooting.md">Troubleshooting</a> docs for more about using logs.</p>
+<h2 id="is-my-gpu-compatible-with-ollama">Is my GPU compatible with Ollama?</h2>
+<p>Please refer to the <a href="./gpu.md">GPU docs</a>.</p>
+<h2 id="how-can-i-specify-the-context-window-size">How can I specify the context window size?</h2>
+<p>By default, Ollama uses a context window size of 4096 tokens. </p>
+<p>This can be overridden with the <code>OLLAMA_CONTEXT_LENGTH</code> environment variable. For example, to set the default context window to 8K, use: </p>
+<pre class="codehilite"><code class="language-shell">OLLAMA_CONTEXT_LENGTH=8192 ollama serve
+</code></pre>
+<p>To change this when using <code>ollama run</code>, use <code>/set parameter</code>:</p>
+<pre class="codehilite"><code class="language-shell">/set parameter num_ctx 4096
+</code></pre>
+<p>When using the API, specify the <code>num_ctx</code> parameter:</p>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{
+  "model": "llama3.2",
+  "prompt": "Why is the sky blue?",
+  "options": {
+    "num_ctx": 4096
+  }
+}'
+</code></pre>
+<h2 id="how-can-i-tell-if-my-model-was-loaded-onto-the-gpu">How can I tell if my model was loaded onto the GPU?</h2>
+<p>Use the <code>ollama ps</code> command to see what models are currently loaded into memory.</p>
+<pre class="codehilite"><code class="language-shell">ollama ps
+</code></pre>
+<blockquote>
+<p><strong>Output</strong>:</p>
+<p><code>NAME          ID              SIZE    PROCESSOR   UNTIL
+llama3:70b    bcfb190ca3a7    42 GB   100% GPU    4 minutes from now</code></p>
+</blockquote>
+<p>The <code>Processor</code> column will show which memory the model was loaded in to:
+* <code>100% GPU</code> means the model was loaded entirely into the GPU
+* <code>100% CPU</code> means the model was loaded entirely in system memory
+* <code>48%/52% CPU/GPU</code> means the model was loaded partially onto both the GPU and into system memory</p>
+<h2 id="how-do-i-configure-ollama-server">How do I configure Ollama server?</h2>
+<p>Ollama server can be configured with environment variables.</p>
+<h3 id="setting-environment-variables-on-mac">Setting environment variables on Mac</h3>
+<p>If Ollama is run as a macOS application, environment variables should be set using <code>launchctl</code>:</p>
+<ol>
+<li>
+<p>For each environment variable, call <code>launchctl setenv</code>.</p>
+<p><code>bash
+launchctl setenv OLLAMA_HOST "0.0.0.0:11434"</code></p>
+</li>
+<li>
+<p>Restart Ollama application.</p>
+</li>
+</ol>
+<h3 id="setting-environment-variables-on-linux">Setting environment variables on Linux</h3>
+<p>If Ollama is run as a systemd service, environment variables should be set using <code>systemctl</code>:</p>
+<ol>
+<li>
+<p>Edit the systemd service by calling <code>systemctl edit ollama.service</code>. This will open an editor.</p>
+</li>
+<li>
+<p>For each environment variable, add a line <code>Environment</code> under section <code>[Service]</code>:</p>
+<p><code>ini
+[Service]
+Environment="OLLAMA_HOST=0.0.0.0:11434"</code></p>
+</li>
+<li>
+<p>Save and exit.</p>
+</li>
+<li>
+<p>Reload <code>systemd</code> and restart Ollama:</p>
+</li>
+</ol>
+<p><code>shell
+   systemctl daemon-reload
+   systemctl restart ollama</code></p>
+<h3 id="setting-environment-variables-on-windows">Setting environment variables on Windows</h3>
+<p>On Windows, Ollama inherits your user and system environment variables.</p>
+<ol>
+<li>
+<p>First Quit Ollama by clicking on it in the task bar.</p>
+</li>
+<li>
+<p>Start the Settings (Windows 11) or Control Panel (Windows 10) application and search for <em>environment variables</em>.</p>
+</li>
+<li>
+<p>Click on <em>Edit environment variables for your account</em>.</p>
+</li>
+<li>
+<p>Edit or create a new variable for your user account for <code>OLLAMA_HOST</code>, <code>OLLAMA_MODELS</code>, etc.</p>
+</li>
+<li>
+<p>Click OK/Apply to save.</p>
+</li>
+<li>
+<p>Start the Ollama application from the Windows Start menu.</p>
+</li>
+</ol>
+<h2 id="how-do-i-use-ollama-behind-a-proxy">How do I use Ollama behind a proxy?</h2>
+<p>Ollama pulls models from the Internet and may require a proxy server to access the models. Use <code>HTTPS_PROXY</code> to redirect outbound requests through the proxy. Ensure the proxy certificate is installed as a system certificate. Refer to the section above for how to use environment variables on your platform.</p>
+<blockquote>
+<p>[!NOTE]
+Avoid setting <code>HTTP_PROXY</code>. Ollama does not use HTTP for model pulls, only HTTPS. Setting <code>HTTP_PROXY</code> may interrupt client connections to the server.</p>
+</blockquote>
+<h3 id="how-do-i-use-ollama-behind-a-proxy-in-docker">How do I use Ollama behind a proxy in Docker?</h3>
+<p>The Ollama Docker container image can be configured to use a proxy by passing <code>-e HTTPS_PROXY=https://proxy.example.com</code> when starting the container.</p>
+<p>Alternatively, the Docker daemon can be configured to use a proxy. Instructions are available for Docker Desktop on <a href="https://docs.docker.com/desktop/settings/mac/#proxies">macOS</a>, <a href="https://docs.docker.com/desktop/settings/windows/#proxies">Windows</a>, and <a href="https://docs.docker.com/desktop/settings/linux/#proxies">Linux</a>, and Docker <a href="https://docs.docker.com/config/daemon/systemd/#httphttps-proxy">daemon with systemd</a>.</p>
+<p>Ensure the certificate is installed as a system certificate when using HTTPS. This may require a new Docker image when using a self-signed certificate.</p>
+<pre class="codehilite"><code class="language-dockerfile">FROM ollama/ollama
+COPY my-ca.pem /usr/local/share/ca-certificates/my-ca.crt
+RUN update-ca-certificates
+</code></pre>
+<p>Build and run this image:</p>
+<pre class="codehilite"><code class="language-shell">docker build -t ollama-with-ca .
+docker run -d -e HTTPS_PROXY=https://my.proxy.example.com -p 11434:11434 ollama-with-ca
+</code></pre>
+<h2 id="does-ollama-send-my-prompts-and-answers-back-to-ollamacom">Does Ollama send my prompts and answers back to ollama.com?</h2>
+<p>No. Ollama runs locally, and conversation data does not leave your machine.</p>
+<h2 id="how-can-i-expose-ollama-on-my-network">How can I expose Ollama on my network?</h2>
+<p>Ollama binds 127.0.0.1 port 11434 by default. Change the bind address with the <code>OLLAMA_HOST</code> environment variable.</p>
+<p>Refer to the section <a href="#how-do-i-configure-ollama-server">above</a> for how to set environment variables on your platform.</p>
+<h2 id="how-can-i-use-ollama-with-a-proxy-server">How can I use Ollama with a proxy server?</h2>
+<p>Ollama runs an HTTP server and can be exposed using a proxy server such as Nginx. To do so, configure the proxy to forward requests and optionally set required headers (if not exposing Ollama on the network). For example, with Nginx:</p>
+<pre class="codehilite"><code class="language-nginx">server {
+    listen 80;
+    server_name example.com;  # Replace with your domain or IP
+    location / {
+        proxy_pass http://localhost:11434;
+        proxy_set_header Host localhost:11434;
+    }
+}
+</code></pre>
+<h2 id="how-can-i-use-ollama-with-ngrok">How can I use Ollama with ngrok?</h2>
+<p>Ollama can be accessed using a range of tools for tunneling tools. For example with Ngrok:</p>
+<pre class="codehilite"><code class="language-shell">ngrok http 11434 --host-header="localhost:11434"
+</code></pre>
+<h2 id="how-can-i-use-ollama-with-cloudflare-tunnel">How can I use Ollama with Cloudflare Tunnel?</h2>
+<p>To use Ollama with Cloudflare Tunnel, use the <code>--url</code> and <code>--http-host-header</code> flags:</p>
+<pre class="codehilite"><code class="language-shell">cloudflared tunnel --url http://localhost:11434 --http-host-header="localhost:11434"
+</code></pre>
+<h2 id="how-can-i-allow-additional-web-origins-to-access-ollama">How can I allow additional web origins to access Ollama?</h2>
+<p>Ollama allows cross-origin requests from <code>127.0.0.1</code> and <code>0.0.0.0</code> by default. Additional origins can be configured with <code>OLLAMA_ORIGINS</code>.</p>
+<p>For browser extensions, you'll need to explicitly allow the extension's origin pattern. Set <code>OLLAMA_ORIGINS</code> to include <code>chrome-extension://*</code>, <code>moz-extension://*</code>, and <code>safari-web-extension://*</code> if you wish to allow all browser extensions access, or specific extensions as needed:</p>
+<pre class="codehilite"><code># Allow all Chrome, Firefox, and Safari extensions
+OLLAMA_ORIGINS=chrome-extension://*,moz-extension://*,safari-web-extension://* ollama serve
+</code></pre>
+<p>Refer to the section <a href="#how-do-i-configure-ollama-server">above</a> for how to set environment variables on your platform.</p>
+<h2 id="where-are-models-stored">Where are models stored?</h2>
+<ul>
+<li>macOS: <code>~/.ollama/models</code></li>
+<li>Linux: <code>/usr/share/ollama/.ollama/models</code></li>
+<li>Windows: <code>C:\Users\%username%\.ollama\models</code></li>
+</ul>
+<h3 id="how-do-i-set-them-to-a-different-location">How do I set them to a different location?</h3>
+<p>If a different directory needs to be used, set the environment variable <code>OLLAMA_MODELS</code> to the chosen directory.</p>
+<blockquote>
+<p>Note: on Linux using the standard installer, the <code>ollama</code> user needs read and write access to the specified directory. To assign the directory to the <code>ollama</code> user run <code>sudo chown -R ollama:ollama &lt;directory&gt;</code>.</p>
+</blockquote>
+<p>Refer to the section <a href="#how-do-i-configure-ollama-server">above</a> for how to set environment variables on your platform.</p>
+<h2 id="how-can-i-use-ollama-in-visual-studio-code">How can I use Ollama in Visual Studio Code?</h2>
+<p>There is already a large collection of plugins available for VSCode as well as other editors that leverage Ollama. See the list of <a href="https://github.com/ollama/ollama#extensions--plugins">extensions &amp; plugins</a> at the bottom of the main repository readme.</p>
+<h2 id="how-do-i-use-ollama-with-gpu-acceleration-in-docker">How do I use Ollama with GPU acceleration in Docker?</h2>
+<p>The Ollama Docker container can be configured with GPU acceleration in Linux or Windows (with WSL2). This requires the <a href="https://github.com/NVIDIA/nvidia-container-toolkit">nvidia-container-toolkit</a>. See <a href="https://hub.docker.com/r/ollama/ollama">ollama/ollama</a> for more details.</p>
+<p>GPU acceleration is not available for Docker Desktop in macOS due to the lack of GPU passthrough and emulation.</p>
+<h2 id="why-is-networking-slow-in-wsl2-on-windows-10">Why is networking slow in WSL2 on Windows 10?</h2>
+<p>This can impact both installing Ollama, as well as downloading models.</p>
+<p>Open <code>Control Panel &gt; Networking and Internet &gt; View network status and tasks</code> and click on <code>Change adapter settings</code> on the left panel. Find the <code>vEthernel (WSL)</code> adapter, right click and select <code>Properties</code>.
+Click on <code>Configure</code> and open the <code>Advanced</code> tab. Search through each of the properties until you find <code>Large Send Offload Version 2 (IPv4)</code> and <code>Large Send Offload Version 2 (IPv6)</code>. <em>Disable</em> both of these
+properties.</p>
+<h2 id="how-can-i-preload-a-model-into-ollama-to-get-faster-response-times">How can I preload a model into Ollama to get faster response times?</h2>
+<p>If you are using the API you can preload a model by sending the Ollama server an empty request. This works with both the <code>/api/generate</code> and <code>/api/chat</code> API endpoints.</p>
+<p>To preload the mistral model using the generate endpoint, use:</p>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{"model": "mistral"}'
+</code></pre>
+<p>To use the chat completions endpoint, use:</p>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/chat -d '{"model": "mistral"}'
+</code></pre>
+<p>To preload a model using the CLI, use the command:</p>
+<pre class="codehilite"><code class="language-shell">ollama run llama3.2 ""
+</code></pre>
+<h2 id="how-do-i-keep-a-model-loaded-in-memory-or-make-it-unload-immediately">How do I keep a model loaded in memory or make it unload immediately?</h2>
+<p>By default models are kept in memory for 5 minutes before being unloaded. This allows for quicker response times if you're making numerous requests to the LLM. If you want to immediately unload a model from memory, use the <code>ollama stop</code> command:</p>
+<pre class="codehilite"><code class="language-shell">ollama stop llama3.2
+</code></pre>
+<p>If you're using the API, use the <code>keep_alive</code> parameter with the <code>/api/generate</code> and <code>/api/chat</code> endpoints to set the amount of time that a model stays in memory. The <code>keep_alive</code> parameter can be set to:
+* a duration string (such as "10m" or "24h")
+* a number in seconds (such as 3600)
+* any negative number which will keep the model loaded in memory (e.g. -1 or "-1m")
+* '0' which will unload the model immediately after generating a response</p>
+<p>For example, to preload a model and leave it in memory use:</p>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{"model": "llama3.2", "keep_alive": -1}'
+</code></pre>
+<p>To unload the model and free up memory use:</p>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/api/generate -d '{"model": "llama3.2", "keep_alive": 0}'
+</code></pre>
+<p>Alternatively, you can change the amount of time all models are loaded into memory by setting the <code>OLLAMA_KEEP_ALIVE</code> environment variable when starting the Ollama server. The <code>OLLAMA_KEEP_ALIVE</code> variable uses the same parameter types as the <code>keep_alive</code> parameter types mentioned above. Refer to the section explaining <a href="#how-do-i-configure-ollama-server">how to configure the Ollama server</a> to correctly set the environment variable.</p>
+<p>The <code>keep_alive</code> API parameter with the <code>/api/generate</code> and <code>/api/chat</code> API endpoints will override the <code>OLLAMA_KEEP_ALIVE</code> setting.</p>
+<h2 id="how-do-i-manage-the-maximum-number-of-requests-the-ollama-server-can-queue">How do I manage the maximum number of requests the Ollama server can queue?</h2>
+<p>If too many requests are sent to the server, it will respond with a 503 error indicating the server is overloaded.  You can adjust how many requests may be queue by setting <code>OLLAMA_MAX_QUEUE</code>.</p>
+<h2 id="how-does-ollama-handle-concurrent-requests">How does Ollama handle concurrent requests?</h2>
+<p>Ollama supports two levels of concurrent processing.  If your system has sufficient available memory (system memory when using CPU inference, or VRAM for GPU inference) then multiple models can be loaded at the same time.  For a given model, if there is sufficient available memory when the model is loaded, it can be configured to allow parallel request processing.</p>
+<p>If there is insufficient available memory to load a new model request while one or more models are already loaded, all new requests will be queued until the new model can be loaded.  As prior models become idle, one or more will be unloaded to make room for the new model.  Queued requests will be processed in order.  When using GPU inference new models must be able to completely fit in VRAM to allow concurrent model loads.</p>
+<p>Parallel request processing for a given model results in increasing the context size by the number of parallel requests.  For example, a 2K context with 4 parallel requests will result in an 8K context and additional memory allocation.</p>
+<p>The following server settings may be used to adjust how Ollama handles concurrent requests on most platforms:</p>
+<ul>
+<li><code>OLLAMA_MAX_LOADED_MODELS</code> - The maximum number of models that can be loaded concurrently provided they fit in available memory.  The default is 3 * the number of GPUs or 3 for CPU inference.</li>
+<li><code>OLLAMA_NUM_PARALLEL</code> - The maximum number of parallel requests each model will process at the same time.  The default is 1, and will handle 1 request per model at a time.</li>
+<li><code>OLLAMA_MAX_QUEUE</code> - The maximum number of requests Ollama will queue when busy before rejecting additional requests. The default is 512</li>
+</ul>
+<p>Note: Windows with Radeon GPUs currently default to 1 model maximum due to limitations in ROCm v5.7 for available VRAM reporting.  Once ROCm v6.2 is available, Windows Radeon will follow the defaults above.  You may enable concurrent model loads on Radeon on Windows, but ensure you don't load more models than will fit into your GPUs VRAM.</p>
+<h2 id="how-does-ollama-load-models-on-multiple-gpus">How does Ollama load models on multiple GPUs?</h2>
+<p>When loading a new model, Ollama evaluates the required VRAM for the model against what is currently available.  If the model will entirely fit on any single GPU, Ollama will load the model on that GPU.  This typically provides the best performance as it reduces the amount of data transferring across the PCI bus during inference.  If the model does not fit entirely on one GPU, then it will be spread across all the available GPUs.</p>
+<h2 id="how-can-i-enable-flash-attention">How can I enable Flash Attention?</h2>
+<p>Flash Attention is a feature of most modern models that can significantly reduce memory usage as the context size grows.  To enable Flash Attention, set the <code>OLLAMA_FLASH_ATTENTION</code> environment variable to <code>1</code> when starting the Ollama server.</p>
+<h2 id="how-can-i-set-the-quantization-type-for-the-kv-cache">How can I set the quantization type for the K/V cache?</h2>
+<p>The K/V context cache can be quantized to significantly reduce memory usage when Flash Attention is enabled.</p>
+<p>To use quantized K/V cache with Ollama you can set the following environment variable:</p>
+<ul>
+<li><code>OLLAMA_KV_CACHE_TYPE</code> - The quantization type for the K/V cache.  Default is <code>f16</code>.</li>
+</ul>
+<blockquote>
+<p>Note: Currently this is a global option - meaning all models will run with the specified quantization type.</p>
+</blockquote>
+<p>The currently available K/V cache quantization types are:</p>
+<ul>
+<li><code>f16</code> - high precision and memory usage (default).</li>
+<li><code>q8_0</code> - 8-bit quantization, uses approximately 1/2 the memory of <code>f16</code> with a very small loss in precision, this usually has no noticeable impact on the model's quality (recommended if not using f16).</li>
+<li><code>q4_0</code> - 4-bit quantization, uses approximately 1/4 the memory of <code>f16</code> with a small-medium loss in precision that may be more noticeable at higher context sizes.</li>
+</ul>
+<p>How much the cache quantization impacts the model's response quality will depend on the model and the task.  Models that have a high GQA count (e.g. Qwen2) may see a larger impact on precision from quantization than models with a low GQA count.</p>
+<p>You may need to experiment with different quantization types to find the best balance between memory usage and quality.</p>
+<h2 id="how-can-i-stop-ollama-from-starting-when-i-login-to-my-computer">How can I stop Ollama from starting when I login to my computer</h2>
+<p>Ollama for Windows and macOS register as a login item during installation.  You can disable this if you prefer not to have Ollama automatically start.  Ollama will respect this setting across upgrades, unless you uninstall the application.</p>
+<p><strong>Windows</strong>
+- Remove <code>%APPDATA%\Microsoft\Windows\Start Menu\Programs\Startup\Ollama.lnk</code></p>
+<p><strong>MacOS Monterey (v12)</strong>
+- Open <code>Settings</code> -&gt; <code>Users &amp; Groups</code> -&gt; <code>Login Items</code> and find the <code>Ollama</code> entry, then click the <code>-</code> (minus) to remove</p>
+<p><strong>MacOS Ventura (v13) and later</strong>
+- Open <code>Settings</code> and search for "Login Items", find the <code>Ollama</code> entry under "Allow in the Background`, then click the slider to disable.</p>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="gpu.md">
+                <div class="file-header">File: gpu.md | Repository: ollama/ollama</div>
+                <h2>gpu.md</h2>
+                
+
+
+
+<h1 id="gpu">GPU</h1>
+<h2 id="nvidia">Nvidia</h2>
+<p>Ollama supports Nvidia GPUs with compute capability 5.0+ and driver version 531 and newer.</p>
+<p>Check your compute compatibility to see if your card is supported:
+<a href="https://developer.nvidia.com/cuda-gpus">https://developer.nvidia.com/cuda-gpus</a></p>
+<table>
+<thead>
+<tr>
+<th>Compute Capability</th>
+<th>Family</th>
+<th>Cards</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>12.0</td>
+<td>GeForce RTX 50xx</td>
+<td><code>RTX 5060</code> <code>RTX 5060 Ti</code> <code>RTX 5070</code> <code>RTX 5070 Ti</code> <code>RTX 5080</code> <code>RTX 5090</code></td>
+</tr>
+<tr>
+<td></td>
+<td>NVIDIA Professioal</td>
+<td><code>RTX PRO 4000 Blackwell</code> <code>RTX PRO 4500 Blackwell</code> <code>RTX PRO 5000 Blackwell</code> <code>RTX PRO 6000 Blackwell</code></td>
+</tr>
+<tr>
+<td>9.0</td>
+<td>NVIDIA</td>
+<td><code>H200</code> <code>H100</code></td>
+</tr>
+<tr>
+<td>8.9</td>
+<td>GeForce RTX 40xx</td>
+<td><code>RTX 4090</code> <code>RTX 4080 SUPER</code> <code>RTX 4080</code> <code>RTX 4070 Ti SUPER</code> <code>RTX 4070 Ti</code> <code>RTX 4070 SUPER</code> <code>RTX 4070</code> <code>RTX 4060 Ti</code> <code>RTX 4060</code></td>
+</tr>
+<tr>
+<td></td>
+<td>NVIDIA Professional</td>
+<td><code>L4</code> <code>L40</code> <code>RTX 6000</code></td>
+</tr>
+<tr>
+<td>8.6</td>
+<td>GeForce RTX 30xx</td>
+<td><code>RTX 3090 Ti</code> <code>RTX 3090</code> <code>RTX 3080 Ti</code> <code>RTX 3080</code> <code>RTX 3070 Ti</code> <code>RTX 3070</code> <code>RTX 3060 Ti</code> <code>RTX 3060</code> <code>RTX 3050 Ti</code> <code>RTX 3050</code></td>
+</tr>
+<tr>
+<td></td>
+<td>NVIDIA Professional</td>
+<td><code>A40</code> <code>RTX A6000</code> <code>RTX A5000</code> <code>RTX A4000</code> <code>RTX A3000</code> <code>RTX A2000</code> <code>A10</code> <code>A16</code> <code>A2</code></td>
+</tr>
+<tr>
+<td>8.0</td>
+<td>NVIDIA</td>
+<td><code>A100</code> <code>A30</code></td>
+</tr>
+<tr>
+<td>7.5</td>
+<td>GeForce GTX/RTX</td>
+<td><code>GTX 1650 Ti</code> <code>TITAN RTX</code> <code>RTX 2080 Ti</code> <code>RTX 2080</code> <code>RTX 2070</code> <code>RTX 2060</code></td>
+</tr>
+<tr>
+<td></td>
+<td>NVIDIA Professional</td>
+<td><code>T4</code> <code>RTX 5000</code> <code>RTX 4000</code> <code>RTX 3000</code> <code>T2000</code> <code>T1200</code> <code>T1000</code> <code>T600</code> <code>T500</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Quadro</td>
+<td><code>RTX 8000</code> <code>RTX 6000</code> <code>RTX 5000</code> <code>RTX 4000</code></td>
+</tr>
+<tr>
+<td>7.0</td>
+<td>NVIDIA</td>
+<td><code>TITAN V</code> <code>V100</code> <code>Quadro GV100</code></td>
+</tr>
+<tr>
+<td>6.1</td>
+<td>NVIDIA TITAN</td>
+<td><code>TITAN Xp</code> <code>TITAN X</code></td>
+</tr>
+<tr>
+<td></td>
+<td>GeForce GTX</td>
+<td><code>GTX 1080 Ti</code> <code>GTX 1080</code> <code>GTX 1070 Ti</code> <code>GTX 1070</code> <code>GTX 1060</code> <code>GTX 1050 Ti</code> <code>GTX 1050</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Quadro</td>
+<td><code>P6000</code> <code>P5200</code> <code>P4200</code> <code>P3200</code> <code>P5000</code> <code>P4000</code> <code>P3000</code> <code>P2200</code> <code>P2000</code> <code>P1000</code> <code>P620</code> <code>P600</code> <code>P500</code> <code>P520</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Tesla</td>
+<td><code>P40</code> <code>P4</code></td>
+</tr>
+<tr>
+<td>6.0</td>
+<td>NVIDIA</td>
+<td><code>Tesla P100</code> <code>Quadro GP100</code></td>
+</tr>
+<tr>
+<td>5.2</td>
+<td>GeForce GTX</td>
+<td><code>GTX TITAN X</code> <code>GTX 980 Ti</code> <code>GTX 980</code> <code>GTX 970</code> <code>GTX 960</code> <code>GTX 950</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Quadro</td>
+<td><code>M6000 24GB</code> <code>M6000</code> <code>M5000</code> <code>M5500M</code> <code>M4000</code> <code>M2200</code> <code>M2000</code> <code>M620</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Tesla</td>
+<td><code>M60</code> <code>M40</code></td>
+</tr>
+<tr>
+<td>5.0</td>
+<td>GeForce GTX</td>
+<td><code>GTX 750 Ti</code> <code>GTX 750</code> <code>NVS 810</code></td>
+</tr>
+<tr>
+<td></td>
+<td>Quadro</td>
+<td><code>K2200</code> <code>K1200</code> <code>K620</code> <code>M1200</code> <code>M520</code> <code>M5000M</code> <code>M4000M</code> <code>M3000M</code> <code>M2000M</code> <code>M1000M</code> <code>K620M</code> <code>M600M</code> <code>M500M</code></td>
+</tr>
+</tbody>
+</table>
+<p>For building locally to support older GPUs, see <a href="./development.md#linux-cuda-nvidia">developer.md</a></p>
+<h3 id="gpu-selection">GPU Selection</h3>
+<p>If you have multiple NVIDIA GPUs in your system and want to limit Ollama to use
+a subset, you can set <code>CUDA_VISIBLE_DEVICES</code> to a comma separated list of GPUs.
+Numeric IDs may be used, however ordering may vary, so UUIDs are more reliable.
+You can discover the UUID of your GPUs by running <code>nvidia-smi -L</code> If you want to
+ignore the GPUs and force CPU usage, use an invalid GPU ID (e.g., "-1")</p>
+<h3 id="linux-suspend-resume">Linux Suspend Resume</h3>
+<p>On linux, after a suspend/resume cycle, sometimes Ollama will fail to discover
+your NVIDIA GPU, and fallback to running on the CPU.  You can workaround this
+driver bug by reloading the NVIDIA UVM driver with <code>sudo rmmod nvidia_uvm &amp;&amp;
+sudo modprobe nvidia_uvm</code></p>
+<h2 id="amd-radeon">AMD Radeon</h2>
+<p>Ollama supports the following AMD GPUs:</p>
+<h3 id="linux-support">Linux Support</h3>
+<table>
+<thead>
+<tr>
+<th>Family</th>
+<th>Cards and accelerators</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AMD Radeon RX</td>
+<td><code>7900 XTX</code> <code>7900 XT</code> <code>7900 GRE</code> <code>7800 XT</code> <code>7700 XT</code> <code>7600 XT</code> <code>7600</code> <code>6950 XT</code> <code>6900 XTX</code> <code>6900XT</code> <code>6800 XT</code> <code>6800</code> <code>Vega 64</code> <code>Vega 56</code></td>
+</tr>
+<tr>
+<td>AMD Radeon PRO</td>
+<td><code>W7900</code> <code>W7800</code> <code>W7700</code> <code>W7600</code> <code>W7500</code> <code>W6900X</code> <code>W6800X Duo</code> <code>W6800X</code> <code>W6800</code> <code>V620</code> <code>V420</code> <code>V340</code> <code>V320</code> <code>Vega II Duo</code> <code>Vega II</code> <code>VII</code> <code>SSG</code></td>
+</tr>
+<tr>
+<td>AMD Instinct</td>
+<td><code>MI300X</code> <code>MI300A</code> <code>MI300</code> <code>MI250X</code> <code>MI250</code> <code>MI210</code> <code>MI200</code> <code>MI100</code> <code>MI60</code> <code>MI50</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="windows-support">Windows Support</h3>
+<p>With ROCm v6.1, the following GPUs are supported on Windows.</p>
+<table>
+<thead>
+<tr>
+<th>Family</th>
+<th>Cards and accelerators</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AMD Radeon RX</td>
+<td><code>7900 XTX</code> <code>7900 XT</code> <code>7900 GRE</code> <code>7800 XT</code> <code>7700 XT</code> <code>7600 XT</code> <code>7600</code> <code>6950 XT</code> <code>6900 XTX</code> <code>6900XT</code> <code>6800 XT</code> <code>6800</code></td>
+</tr>
+<tr>
+<td>AMD Radeon PRO</td>
+<td><code>W7900</code> <code>W7800</code> <code>W7700</code> <code>W7600</code> <code>W7500</code> <code>W6900X</code> <code>W6800X Duo</code> <code>W6800X</code> <code>W6800</code> <code>V620</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="overrides-on-linux">Overrides on Linux</h3>
+<p>Ollama leverages the AMD ROCm library, which does not support all AMD GPUs. In
+some cases you can force the system to try to use a similar LLVM target that is
+close.  For example The Radeon RX 5400 is <code>gfx1034</code> (also known as 10.3.4)
+however, ROCm does not currently support this target. The closest support is
+<code>gfx1030</code>.  You can use the environment variable <code>HSA_OVERRIDE_GFX_VERSION</code> with
+<code>x.y.z</code> syntax.  So for example, to force the system to run on the RX 5400, you
+would set <code>HSA_OVERRIDE_GFX_VERSION="10.3.0"</code> as an environment variable for the
+server.  If you have an unsupported AMD GPU you can experiment using the list of
+supported types below.</p>
+<p>If you have multiple GPUs with different GFX versions, append the numeric device
+number to the environment variable to set them individually.  For example,
+<code>HSA_OVERRIDE_GFX_VERSION_0=10.3.0</code> and  <code>HSA_OVERRIDE_GFX_VERSION_1=11.0.0</code></p>
+<p>At this time, the known supported GPU types on linux are the following LLVM Targets.
+This table shows some example GPUs that map to these LLVM targets:
+| <strong>LLVM Target</strong> | <strong>An Example GPU</strong> |
+|-----------------|---------------------|
+| gfx900 | Radeon RX Vega 56 |
+| gfx906 | Radeon Instinct MI50 |
+| gfx908 | Radeon Instinct MI100 |
+| gfx90a | Radeon Instinct MI210 |
+| gfx940 | Radeon Instinct MI300 |
+| gfx941 | |
+| gfx942 | |
+| gfx1030 | Radeon PRO V620 |
+| gfx1100 | Radeon PRO W7900 |
+| gfx1101 | Radeon PRO W7700 |
+| gfx1102 | Radeon RX 7600 |</p>
+<p>AMD is working on enhancing ROCm v6 to broaden support for families of GPUs in a
+future release which should increase support for more GPUs.</p>
+<p>Reach out on <a href="https://discord.gg/ollama">Discord</a> or file an
+<a href="https://github.com/ollama/ollama/issues">issue</a> for additional help.</p>
+<h3 id="gpu-selection_1">GPU Selection</h3>
+<p>If you have multiple AMD GPUs in your system and want to limit Ollama to use a
+subset, you can set <code>ROCR_VISIBLE_DEVICES</code> to a comma separated list of GPUs.
+You can see the list of devices with <code>rocminfo</code>.  If you want to ignore the GPUs
+and force CPU usage, use an invalid GPU ID (e.g., "-1").  When available, use the
+<code>Uuid</code> to uniquely identify the device instead of numeric value.</p>
+<h3 id="container-permission">Container Permission</h3>
+<p>In some Linux distributions, SELinux can prevent containers from
+accessing the AMD GPU devices.  On the host system you can run 
+<code>sudo setsebool container_use_devices=1</code> to allow containers to use devices.</p>
+<h3 id="metal-apple-gpus">Metal (Apple GPUs)</h3>
+<p>Ollama supports GPU acceleration on Apple devices via the Metal API.</p>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="import.md">
+                <div class="file-header">File: import.md | Repository: ollama/ollama</div>
+                <h2>import.md</h2>
+                
+
+
+
+<h1 id="importing-a-model">Importing a model</h1>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#Importing-a-fine-tuned-adapter-from-Safetensors-weights">Importing a Safetensors adapter</a></li>
+<li><a href="#Importing-a-model-from-Safetensors-weights">Importing a Safetensors model</a></li>
+<li><a href="#Importing-a-GGUF-based-model-or-adapter">Importing a GGUF file</a></li>
+<li><a href="#Sharing-your-model-on-ollamacom">Sharing models on ollama.com</a></li>
+</ul>
+<h2 id="importing-a-fine-tuned-adapter-from-safetensors-weights">Importing a fine tuned adapter from Safetensors weights</h2>
+<p>First, create a <code>Modelfile</code> with a <code>FROM</code> command pointing at the base model you used for fine tuning, and an <code>ADAPTER</code> command which points to the directory with your Safetensors adapter:</p>
+<pre class="codehilite"><code class="language-dockerfile">FROM &lt;base model name&gt;
+ADAPTER /path/to/safetensors/adapter/directory
+</code></pre>
+<p>Make sure that you use the same base model in the <code>FROM</code> command as you used to create the adapter otherwise you will get erratic results. Most frameworks use different quantization methods, so it's best to use non-quantized (i.e. non-QLoRA) adapters. If your adapter is in the same directory as your <code>Modelfile</code>, use <code>ADAPTER .</code> to specify the adapter path.</p>
+<p>Now run <code>ollama create</code> from the directory where the <code>Modelfile</code> was created:</p>
+<pre class="codehilite"><code class="language-shell">ollama create my-model
+</code></pre>
+<p>Lastly, test the model:</p>
+<pre class="codehilite"><code class="language-shell">ollama run my-model
+</code></pre>
+<p>Ollama supports importing adapters based on several different model architectures including:</p>
+<ul>
+<li>Llama (including Llama 2, Llama 3, Llama 3.1, and Llama 3.2);</li>
+<li>Mistral (including Mistral 1, Mistral 2, and Mixtral); and</li>
+<li>Gemma (including Gemma 1 and Gemma 2)</li>
+</ul>
+<p>You can create the adapter using a fine tuning framework or tool which can output adapters in the Safetensors format, such as:</p>
+<ul>
+<li>Hugging Face <a href="https://huggingface.co/docs/transformers/en/training">fine tuning framework</a></li>
+<li><a href="https://github.com/unslothai/unsloth">Unsloth</a></li>
+<li><a href="https://github.com/ml-explore/mlx">MLX</a></li>
+</ul>
+<h2 id="importing-a-model-from-safetensors-weights">Importing a model from Safetensors weights</h2>
+<p>First, create a <code>Modelfile</code> with a <code>FROM</code> command which points to the directory containing your Safetensors weights:</p>
+<pre class="codehilite"><code class="language-dockerfile">FROM /path/to/safetensors/directory
+</code></pre>
+<p>If you create the Modelfile in the same directory as the weights, you can use the command <code>FROM .</code>.</p>
+<p>If you do not create the Modelfile, ollama will act as if there was a Modelfile with the command <code>FROM .</code>.</p>
+<p>Now run the <code>ollama create</code> command from the directory where you created the <code>Modelfile</code>:</p>
+<pre class="codehilite"><code class="language-shell">ollama create my-model
+</code></pre>
+<p>Lastly, test the model:</p>
+<pre class="codehilite"><code class="language-shell">ollama run my-model
+</code></pre>
+<p>Ollama supports importing models for several different architectures including:</p>
+<ul>
+<li>Llama (including Llama 2, Llama 3, Llama 3.1, and Llama 3.2);</li>
+<li>Mistral (including Mistral 1, Mistral 2, and Mixtral);</li>
+<li>Gemma (including Gemma 1 and Gemma 2); and</li>
+<li>Phi3</li>
+</ul>
+<p>This includes importing foundation models as well as any fine tuned models which have been <em>fused</em> with a foundation model.</p>
+<h2 id="importing-a-gguf-based-model-or-adapter">Importing a GGUF based model or adapter</h2>
+<p>If you have a GGUF based model or adapter it is possible to import it into Ollama. You can obtain a GGUF model or adapter by:</p>
+<ul>
+<li>converting a Safetensors model with the <code>convert_hf_to_gguf.py</code> from Llama.cpp; </li>
+<li>converting a Safetensors adapter with the <code>convert_lora_to_gguf.py</code> from Llama.cpp; or</li>
+<li>downloading a model or adapter from a place such as HuggingFace</li>
+</ul>
+<p>To import a GGUF model, create a <code>Modelfile</code> containing:</p>
+<pre class="codehilite"><code class="language-dockerfile">FROM /path/to/file.gguf
+</code></pre>
+<p>For a GGUF adapter, create the <code>Modelfile</code> with:</p>
+<pre class="codehilite"><code class="language-dockerfile">FROM &lt;model name&gt;
+ADAPTER /path/to/file.gguf
+</code></pre>
+<p>When importing a GGUF adapter, it's important to use the same base model as the base model that the adapter was created with. You can use:</p>
+<ul>
+<li>a model from Ollama</li>
+<li>a GGUF file</li>
+<li>a Safetensors based model </li>
+</ul>
+<p>Once you have created your <code>Modelfile</code>, use the <code>ollama create</code> command to build the model.</p>
+<pre class="codehilite"><code class="language-shell">ollama create my-model
+</code></pre>
+<h2 id="quantizing-a-model">Quantizing a Model</h2>
+<p>Quantizing a model allows you to run models faster and with less memory consumption but at reduced accuracy. This allows you to run a model on more modest hardware.</p>
+<p>Ollama can quantize FP16 and FP32 based models into different quantization levels using the <code>-q/--quantize</code> flag with the <code>ollama create</code> command.</p>
+<p>First, create a Modelfile with the FP16 or FP32 based model you wish to quantize.</p>
+<pre class="codehilite"><code class="language-dockerfile">FROM /path/to/my/gemma/f16/model
+</code></pre>
+<p>Use <code>ollama create</code> to then create the quantized model.</p>
+<pre class="codehilite"><code class="language-shell">$ ollama create --quantize q4_K_M mymodel
+transferring model data
+quantizing F16 model to Q4_K_M
+creating new layer sha256:735e246cc1abfd06e9cdcf95504d6789a6cd1ad7577108a70d9902fef503c1bd
+creating new layer sha256:0853f0ad24e5865173bbf9ffcc7b0f5d56b66fd690ab1009867e45e7d2c4db0f
+writing manifest
+success
+</code></pre>
+<h3 id="supported-quantizations">Supported Quantizations</h3>
+<ul>
+<li><code>q8_0</code></li>
+</ul>
+<h4 id="k-means-quantizations">K-means Quantizations</h4>
+<ul>
+<li><code>q4_K_S</code></li>
+<li><code>q4_K_M</code></li>
+</ul>
+<h2 id="sharing-your-model-on-ollamacom">Sharing your model on ollama.com</h2>
+<p>You can share any model you have created by pushing it to <a href="https://ollama.com">ollama.com</a> so that other users can try it out.</p>
+<p>First, use your browser to go to the <a href="https://ollama.com/signup">Ollama Sign-Up</a> page. If you already have an account, you can skip this step.</p>
+<p><img alt="Sign-Up" src="images/signup.png" width="40%"/></p>
+<p>The <code>Username</code> field will be used as part of your model's name (e.g. <code>jmorganca/mymodel</code>), so make sure you are comfortable with the username that you have selected.</p>
+<p>Now that you have created an account and are signed-in, go to the <a href="https://ollama.com/settings/keys">Ollama Keys Settings</a> page.</p>
+<p>Follow the directions on the page to determine where your Ollama Public Key is located.</p>
+<p><img alt="Ollama Keys" src="images/ollama-keys.png" width="80%"/></p>
+<p>Click on the <code>Add Ollama Public Key</code> button, and copy and paste the contents of your Ollama Public Key into the text field.</p>
+<p>To push a model to <a href="https://ollama.com">ollama.com</a>, first make sure that it is named correctly with your username. You may have to use the <code>ollama cp</code> command to copy
+your model to give it the correct name. Once you're happy with your model's name, use the <code>ollama push</code> command to push it to <a href="https://ollama.com">ollama.com</a>.</p>
+<pre class="codehilite"><code class="language-shell">ollama cp mymodel myuser/mymodel
+ollama push myuser/mymodel
+</code></pre>
+<p>Once your model has been pushed, other users can pull and run it by using the command:</p>
+<pre class="codehilite"><code class="language-shell">ollama run myuser/mymodel
+</code></pre>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="linux.md">
+                <div class="file-header">File: linux.md | Repository: ollama/ollama</div>
+                <h2>linux.md</h2>
+                
+
+
+
+<h1 id="linux">Linux</h1>
+<h2 id="install">Install</h2>
+<p>To install Ollama, run the following command:</p>
+<pre class="codehilite"><code class="language-shell">curl -fsSL https://ollama.com/install.sh | sh
+</code></pre>
+<h2 id="manual-install">Manual install</h2>
+<blockquote>
+<p>[!NOTE]
+If you are upgrading from a prior version, you should remove the old libraries with <code>sudo rm -rf /usr/lib/ollama</code> first.</p>
+</blockquote>
+<p>Download and extract the package:</p>
+<pre class="codehilite"><code class="language-shell">curl -LO https://ollama.com/download/ollama-linux-amd64.tgz
+sudo tar -C /usr -xzf ollama-linux-amd64.tgz
+</code></pre>
+<p>Start Ollama:</p>
+<pre class="codehilite"><code class="language-shell">ollama serve
+</code></pre>
+<p>In another terminal, verify that Ollama is running:</p>
+<pre class="codehilite"><code class="language-shell">ollama -v
+</code></pre>
+<h3 id="amd-gpu-install">AMD GPU install</h3>
+<p>If you have an AMD GPU, also download and extract the additional ROCm package:</p>
+<pre class="codehilite"><code class="language-shell">curl -L https://ollama.com/download/ollama-linux-amd64-rocm.tgz -o ollama-linux-amd64-rocm.tgz
+sudo tar -C /usr -xzf ollama-linux-amd64-rocm.tgz
+</code></pre>
+<h3 id="arm64-install">ARM64 install</h3>
+<p>Download and extract the ARM64-specific package:</p>
+<pre class="codehilite"><code class="language-shell">curl -L https://ollama.com/download/ollama-linux-arm64.tgz -o ollama-linux-arm64.tgz
+sudo tar -C /usr -xzf ollama-linux-arm64.tgz
+</code></pre>
+<h3 id="adding-ollama-as-a-startup-service-recommended">Adding Ollama as a startup service (recommended)</h3>
+<p>Create a user and group for Ollama:</p>
+<pre class="codehilite"><code class="language-shell">sudo useradd -r -s /bin/false -U -m -d /usr/share/ollama ollama
+sudo usermod -a -G ollama $(whoami)
+</code></pre>
+<p>Create a service file in <code>/etc/systemd/system/ollama.service</code>:</p>
+<pre class="codehilite"><code class="language-ini">[Unit]
+Description=Ollama Service
+After=network-online.target
+
+[Service]
+ExecStart=/usr/bin/ollama serve
+User=ollama
+Group=ollama
+Restart=always
+RestartSec=3
+Environment="PATH=$PATH"
+
+[Install]
+WantedBy=multi-user.target
+</code></pre>
+<p>Then start the service:</p>
+<pre class="codehilite"><code class="language-shell">sudo systemctl daemon-reload
+sudo systemctl enable ollama
+</code></pre>
+<h3 id="install-cuda-drivers-optional">Install CUDA drivers (optional)</h3>
+<p><a href="https://developer.nvidia.com/cuda-downloads">Download and install</a> CUDA.</p>
+<p>Verify that the drivers are installed by running the following command, which should print details about your GPU:</p>
+<pre class="codehilite"><code class="language-shell">nvidia-smi
+</code></pre>
+<h3 id="install-amd-rocm-drivers-optional">Install AMD ROCm drivers (optional)</h3>
+<p><a href="https://rocm.docs.amd.com/projects/install-on-linux/en/latest/tutorial/quick-start.html">Download and Install</a> ROCm v6.</p>
+<h3 id="start-ollama">Start Ollama</h3>
+<p>Start Ollama and verify it is running:</p>
+<pre class="codehilite"><code class="language-shell">sudo systemctl start ollama
+sudo systemctl status ollama
+</code></pre>
+<blockquote>
+<p>[!NOTE]
+While AMD has contributed the <code>amdgpu</code> driver upstream to the official linux
+kernel source, the version is older and may not support all ROCm features. We
+recommend you install the latest driver from
+<a href="https://www.amd.com/en/support/download/linux-drivers.html">AMD</a> for best support
+of your Radeon GPU.</p>
+</blockquote>
+<h2 id="customizing">Customizing</h2>
+<p>To customize the installation of Ollama, you can edit the systemd service file or the environment variables by running:</p>
+<pre class="codehilite"><code class="language-shell">sudo systemctl edit ollama
+</code></pre>
+<p>Alternatively, create an override file manually in <code>/etc/systemd/system/ollama.service.d/override.conf</code>:</p>
+<pre class="codehilite"><code class="language-ini">[Service]
+Environment="OLLAMA_DEBUG=1"
+</code></pre>
+<h2 id="updating">Updating</h2>
+<p>Update Ollama by running the install script again:</p>
+<pre class="codehilite"><code class="language-shell">curl -fsSL https://ollama.com/install.sh | sh
+</code></pre>
+<p>Or by re-downloading Ollama:</p>
+<pre class="codehilite"><code class="language-shell">curl -L https://ollama.com/download/ollama-linux-amd64.tgz -o ollama-linux-amd64.tgz
+sudo tar -C /usr -xzf ollama-linux-amd64.tgz
+</code></pre>
+<h2 id="installing-specific-versions">Installing specific versions</h2>
+<p>Use <code>OLLAMA_VERSION</code> environment variable with the install script to install a specific version of Ollama, including pre-releases. You can find the version numbers in the <a href="https://github.com/ollama/ollama/releases">releases page</a>.</p>
+<p>For example:</p>
+<pre class="codehilite"><code class="language-shell">curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION=0.5.7 sh
+</code></pre>
+<h2 id="viewing-logs">Viewing logs</h2>
+<p>To view logs of Ollama running as a startup service, run:</p>
+<pre class="codehilite"><code class="language-shell">journalctl -e -u ollama
+</code></pre>
+<h2 id="uninstall">Uninstall</h2>
+<p>Remove the ollama service:</p>
+<pre class="codehilite"><code class="language-shell">sudo systemctl stop ollama
+sudo systemctl disable ollama
+sudo rm /etc/systemd/system/ollama.service
+</code></pre>
+<p>Remove the ollama binary from your bin directory (either <code>/usr/local/bin</code>, <code>/usr/bin</code>, or <code>/bin</code>):</p>
+<pre class="codehilite"><code class="language-shell">sudo rm $(which ollama)
+</code></pre>
+<p>Remove the downloaded models and Ollama service user and group:</p>
+<pre class="codehilite"><code class="language-shell">sudo rm -r /usr/share/ollama
+sudo userdel ollama
+sudo groupdel ollama
+</code></pre>
+<p>Remove installed libraries:</p>
+<pre class="codehilite"><code class="language-shell">sudo rm -rf /usr/local/lib/ollama
+</code></pre>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="macos.md">
+                <div class="file-header">File: macos.md | Repository: ollama/ollama</div>
+                <h2>macos.md</h2>
+                
+
+
+
+<h1 id="ollama-for-macos">Ollama for macOS</h1>
+<h2 id="system-requirements">System Requirements</h2>
+<ul>
+<li>MacOS Monterey (v12) or newer</li>
+<li>Apple M series (CPU and GPU support) or x86 (CPU only)</li>
+</ul>
+<h2 id="filesystem-requirements">Filesystem Requirements</h2>
+<p>The preferred method of installation is to mount the <code>ollama.dmg</code> and drag-and-drop the Ollama application to the system-wide <code>Applications</code> folder.  Upon startup, the Ollama app will verify the <code>ollama</code> CLI is present in your PATH, and if not detected, will prompt for permission to create a link in <code>/usr/local/bin</code></p>
+<p>Once you've installed Ollama, you'll need additional space for storing the Large Language models, which can be tens to hundreds of GB in size.  If your home directory doesn't have enough space, you can change where the binaries are installed, and where the models are stored.</p>
+<h3 id="changing-install-location">Changing Install Location</h3>
+<p>To install the Ollama application somewhere other than <code>Applications</code>, place the Ollama application in the desired location, and ensure the CLI <code>Ollama.app/Contents/Resources/ollama</code> or a sym-link to the CLI can be found in your path.  Upon first start decline the "Move to Applications?" request.</p>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>Ollama on MacOS stores files in a few different locations.
+- <code>~/.ollama</code> contains models and configuration
+- <code>~/.ollama/logs</code> contains logs
+    - <em>app.log</em> contains most recent logs from the GUI application
+    - <em>server.log</em> contains the most recent server logs
+- <code>&lt;install location&gt;/Ollama.app/Contents/Resources/ollama</code> the CLI binary</p>
+<h2 id="uninstall">Uninstall</h2>
+<p>To fully remove Ollama from your system, remove the following files and folders:</p>
+<pre class="codehilite"><code>sudo rm -rf /Applications/Ollama.app
+sudo rm /usr/local/bin/ollama
+rm -rf "~/Library/Application Support/Ollama"
+rm -rf "~/Library/Saved Application State/com.electron.ollama.savedState"
+rm -rf ~/Library/Caches/com.electron.ollama/
+rm -rf ~/Library/Caches/ollama
+rm -rf ~/Library/WebKit/com.electron.ollama
+rm -rf ~/.ollama
+</code></pre>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="modelfile.md">
+                <div class="file-header">File: modelfile.md | Repository: ollama/ollama</div>
+                <h2>modelfile.md</h2>
+                
+
+
+
+<h1 id="ollama-model-file">Ollama Model File</h1>
+<blockquote>
+<p>[!NOTE]
+<code>Modelfile</code> syntax is in development</p>
+</blockquote>
+<p>A model file is the blueprint to create and share models with Ollama.</p>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li><a href="#format">Format</a></li>
+<li><a href="#examples">Examples</a></li>
+<li><a href="#instructions">Instructions</a></li>
+<li><a href="#from-required">FROM (Required)</a><ul>
+<li><a href="#build-from-existing-model">Build from existing model</a></li>
+<li><a href="#build-from-a-safetensors-model">Build from a Safetensors model</a></li>
+<li><a href="#build-from-a-gguf-file">Build from a GGUF file</a></li>
+</ul>
+</li>
+<li><a href="#parameter">PARAMETER</a><ul>
+<li><a href="#valid-parameters-and-values">Valid Parameters and Values</a></li>
+</ul>
+</li>
+<li><a href="#template">TEMPLATE</a><ul>
+<li><a href="#template-variables">Template Variables</a></li>
+</ul>
+</li>
+<li><a href="#system">SYSTEM</a></li>
+<li><a href="#adapter">ADAPTER</a></li>
+<li><a href="#license">LICENSE</a></li>
+<li><a href="#message">MESSAGE</a></li>
+<li><a href="#notes">Notes</a></li>
+</ul>
+<h2 id="format">Format</h2>
+<p>The format of the <code>Modelfile</code>:</p>
+<pre class="codehilite"><code># comment
+INSTRUCTION arguments
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>Instruction</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="#from-required"><code>FROM</code></a> (required)</td>
+<td>Defines the base model to use.</td>
+</tr>
+<tr>
+<td><a href="#parameter"><code>PARAMETER</code></a></td>
+<td>Sets the parameters for how Ollama will run the model.</td>
+</tr>
+<tr>
+<td><a href="#template"><code>TEMPLATE</code></a></td>
+<td>The full prompt template to be sent to the model.</td>
+</tr>
+<tr>
+<td><a href="#system"><code>SYSTEM</code></a></td>
+<td>Specifies the system message that will be set in the template.</td>
+</tr>
+<tr>
+<td><a href="#adapter"><code>ADAPTER</code></a></td>
+<td>Defines the (Q)LoRA adapters to apply to the model.</td>
+</tr>
+<tr>
+<td><a href="#license"><code>LICENSE</code></a></td>
+<td>Specifies the legal license.</td>
+</tr>
+<tr>
+<td><a href="#message"><code>MESSAGE</code></a></td>
+<td>Specify message history.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="examples">Examples</h2>
+<h3 id="basic-modelfile">Basic <code>Modelfile</code></h3>
+<p>An example of a <code>Modelfile</code> creating a mario blueprint:</p>
+<pre class="codehilite"><code>FROM llama3.2
+# sets the temperature to 1 [higher is more creative, lower is more coherent]
+PARAMETER temperature 1
+# sets the context window size to 4096, this controls how many tokens the LLM can use as context to generate the next token
+PARAMETER num_ctx 4096
+
+# sets a custom system message to specify the behavior of the chat assistant
+SYSTEM You are Mario from super mario bros, acting as an assistant.
+</code></pre>
+<p>To use this:</p>
+<ol>
+<li>Save it as a file (e.g. <code>Modelfile</code>)</li>
+<li><code>ollama create choose-a-model-name -f &lt;location of the file e.g. ./Modelfile&gt;</code></li>
+<li><code>ollama run choose-a-model-name</code></li>
+<li>Start using the model!</li>
+</ol>
+<p>To view the Modelfile of a given model, use the <code>ollama show --modelfile</code> command.</p>
+<pre class="codehilite"><code class="language-shell">ollama show --modelfile llama3.2
+</code></pre>
+<blockquote>
+<p><strong>Output</strong>:</p>
+<p>```</p>
+<h1 id="modelfile-generated-by-ollama-show">Modelfile generated by "ollama show"</h1>
+<h1 id="to-build-a-new-modelfile-based-on-this-one-replace-the-from-line-with">To build a new Modelfile based on this one, replace the FROM line with:</h1>
+<h1 id="from-llama32latest">FROM llama3.2:latest</h1>
+<p>FROM /Users/pdevine/.ollama/models/blobs/sha256-00e1317cbf74d901080d7100f57580ba8dd8de57203072dc6f668324ba545f29
+TEMPLATE """{{ if .System }}&lt;|start_header_id|&gt;system&lt;|end_header_id|&gt;</p>
+<p>{{ .System }}&lt;|eot_id|&gt;{{ end }}{{ if .Prompt }}&lt;|start_header_id|&gt;user&lt;|end_header_id|&gt;</p>
+<p>{{ .Prompt }}&lt;|eot_id|&gt;{{ end }}&lt;|start_header_id|&gt;assistant&lt;|end_header_id|&gt;</p>
+<p>{{ .Response }}&lt;|eot_id|&gt;"""
+PARAMETER stop "&lt;|start_header_id|&gt;"
+PARAMETER stop "&lt;|end_header_id|&gt;"
+PARAMETER stop "&lt;|eot_id|&gt;"
+PARAMETER stop "&lt;|reserved_special_token"
+```</p>
+</blockquote>
+<h2 id="instructions">Instructions</h2>
+<h3 id="from-required">FROM (Required)</h3>
+<p>The <code>FROM</code> instruction defines the base model to use when creating a model.</p>
+<pre class="codehilite"><code>FROM &lt;model name&gt;:&lt;tag&gt;
+</code></pre>
+<h4 id="build-from-existing-model">Build from existing model</h4>
+<pre class="codehilite"><code>FROM llama3.2
+</code></pre>
+<p>A list of available base models:
+<a href="https://github.com/ollama/ollama#model-library">https://github.com/ollama/ollama#model-library</a>
+Additional models can be found at:
+<a href="https://ollama.com/library">https://ollama.com/library</a></p>
+<h4 id="build-from-a-safetensors-model">Build from a Safetensors model</h4>
+<pre class="codehilite"><code>FROM &lt;model directory&gt;
+</code></pre>
+<p>The model directory should contain the Safetensors weights for a supported architecture.</p>
+<p>Currently supported model architectures:
+  * Llama (including Llama 2, Llama 3, Llama 3.1, and Llama 3.2)
+  * Mistral (including Mistral 1, Mistral 2, and Mixtral)
+  * Gemma (including Gemma 1 and Gemma 2)
+  * Phi3</p>
+<h4 id="build-from-a-gguf-file">Build from a GGUF file</h4>
+<pre class="codehilite"><code>FROM ./ollama-model.gguf
+</code></pre>
+<p>The GGUF file location should be specified as an absolute path or relative to the <code>Modelfile</code> location.</p>
+<h3 id="parameter">PARAMETER</h3>
+<p>The <code>PARAMETER</code> instruction defines a parameter that can be set when the model is run.</p>
+<pre class="codehilite"><code>PARAMETER &lt;parameter&gt; &lt;parametervalue&gt;
+</code></pre>
+<h4 id="valid-parameters-and-values">Valid Parameters and Values</h4>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Value Type</th>
+<th>Example Usage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>num_ctx</td>
+<td>Sets the size of the context window used to generate the next token. (Default: 4096)</td>
+<td>int</td>
+<td>num_ctx 4096</td>
+</tr>
+<tr>
+<td>repeat_last_n</td>
+<td>Sets how far back for the model to look back to prevent repetition. (Default: 64, 0 = disabled, -1 = num_ctx)</td>
+<td>int</td>
+<td>repeat_last_n 64</td>
+</tr>
+<tr>
+<td>repeat_penalty</td>
+<td>Sets how strongly to penalize repetitions. A higher value (e.g., 1.5) will penalize repetitions more strongly, while a lower value (e.g., 0.9) will be more lenient. (Default: 1.1)</td>
+<td>float</td>
+<td>repeat_penalty 1.1</td>
+</tr>
+<tr>
+<td>temperature</td>
+<td>The temperature of the model. Increasing the temperature will make the model answer more creatively. (Default: 0.8)</td>
+<td>float</td>
+<td>temperature 0.7</td>
+</tr>
+<tr>
+<td>seed</td>
+<td>Sets the random number seed to use for generation. Setting this to a specific number will make the model generate the same text for the same prompt. (Default: 0)</td>
+<td>int</td>
+<td>seed 42</td>
+</tr>
+<tr>
+<td>stop</td>
+<td>Sets the stop sequences to use. When this pattern is encountered the LLM will stop generating text and return. Multiple stop patterns may be set by specifying multiple separate <code>stop</code> parameters in a modelfile.</td>
+<td>string</td>
+<td>stop "AI assistant:"</td>
+</tr>
+<tr>
+<td>num_predict</td>
+<td>Maximum number of tokens to predict when generating text. (Default: -1, infinite generation)</td>
+<td>int</td>
+<td>num_predict 42</td>
+</tr>
+<tr>
+<td>top_k</td>
+<td>Reduces the probability of generating nonsense. A higher value (e.g. 100) will give more diverse answers, while a lower value (e.g. 10) will be more conservative. (Default: 40)</td>
+<td>int</td>
+<td>top_k 40</td>
+</tr>
+<tr>
+<td>top_p</td>
+<td>Works together with top-k. A higher value (e.g., 0.95) will lead to more diverse text, while a lower value (e.g., 0.5) will generate more focused and conservative text. (Default: 0.9)</td>
+<td>float</td>
+<td>top_p 0.9</td>
+</tr>
+<tr>
+<td>min_p</td>
+<td>Alternative to the top_p, and aims to ensure a balance of quality and variety. The parameter <em>p</em> represents the minimum probability for a token to be considered, relative to the probability of the most likely token. For example, with <em>p</em>=0.05 and the most likely token having a probability of 0.9, logits with a value less than 0.045 are filtered out. (Default: 0.0)</td>
+<td>float</td>
+<td>min_p 0.05</td>
+</tr>
+</tbody>
+</table>
+<h3 id="template">TEMPLATE</h3>
+<p><code>TEMPLATE</code> of the full prompt template to be passed into the model. It may include (optionally) a system message, a user's message and the response from the model. Note: syntax may be model specific. Templates use Go <a href="https://pkg.go.dev/text/template">template syntax</a>.</p>
+<h4 id="template-variables">Template Variables</h4>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>{{ .System }}</code></td>
+<td>The system message used to specify custom behavior.</td>
+</tr>
+<tr>
+<td><code>{{ .Prompt }}</code></td>
+<td>The user prompt message.</td>
+</tr>
+<tr>
+<td><code>{{ .Response }}</code></td>
+<td>The response from the model. When generating a response, text after this variable is omitted.</td>
+</tr>
+</tbody>
+</table>
+<pre class="codehilite"><code>TEMPLATE """{{ if .System }}&lt;|im_start|&gt;system
+{{ .System }}&lt;|im_end|&gt;
+{{ end }}{{ if .Prompt }}&lt;|im_start|&gt;user
+{{ .Prompt }}&lt;|im_end|&gt;
+{{ end }}&lt;|im_start|&gt;assistant
+"""
+</code></pre>
+<h3 id="system">SYSTEM</h3>
+<p>The <code>SYSTEM</code> instruction specifies the system message to be used in the template, if applicable.</p>
+<pre class="codehilite"><code>SYSTEM """&lt;system message&gt;"""
+</code></pre>
+<h3 id="adapter">ADAPTER</h3>
+<p>The <code>ADAPTER</code> instruction specifies a fine tuned LoRA adapter that should apply to the base model. The value of the adapter should be an absolute path or a path relative to the Modelfile. The base model should be specified with a <code>FROM</code> instruction. If the base model is not the same as the base model that the adapter was tuned from the behaviour will be erratic.</p>
+<h4 id="safetensor-adapter">Safetensor adapter</h4>
+<pre class="codehilite"><code>ADAPTER &lt;path to safetensor adapter&gt;
+</code></pre>
+<p>Currently supported Safetensor adapters:
+  * Llama (including Llama 2, Llama 3, and Llama 3.1)
+  * Mistral (including Mistral 1, Mistral 2, and Mixtral)
+  * Gemma (including Gemma 1 and Gemma 2)</p>
+<h4 id="gguf-adapter">GGUF adapter</h4>
+<pre class="codehilite"><code>ADAPTER ./ollama-lora.gguf
+</code></pre>
+<h3 id="license">LICENSE</h3>
+<p>The <code>LICENSE</code> instruction allows you to specify the legal license under which the model used with this Modelfile is shared or distributed.</p>
+<pre class="codehilite"><code>LICENSE """
+&lt;license text&gt;
+"""
+</code></pre>
+<h3 id="message">MESSAGE</h3>
+<p>The <code>MESSAGE</code> instruction allows you to specify a message history for the model to use when responding. Use multiple iterations of the MESSAGE command to build up a conversation which will guide the model to answer in a similar way.</p>
+<pre class="codehilite"><code>MESSAGE &lt;role&gt; &lt;message&gt;
+</code></pre>
+<h4 id="valid-roles">Valid roles</h4>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>system</td>
+<td>Alternate way of providing the SYSTEM message for the model.</td>
+</tr>
+<tr>
+<td>user</td>
+<td>An example message of what the user could have asked.</td>
+</tr>
+<tr>
+<td>assistant</td>
+<td>An example message of how the model should respond.</td>
+</tr>
+</tbody>
+</table>
+<h4 id="example-conversation">Example conversation</h4>
+<pre class="codehilite"><code>MESSAGE user Is Toronto in Canada?
+MESSAGE assistant yes
+MESSAGE user Is Sacramento in Canada?
+MESSAGE assistant no
+MESSAGE user Is Ontario in Canada?
+MESSAGE assistant yes
+</code></pre>
+<h2 id="notes">Notes</h2>
+<ul>
+<li>the <strong><code>Modelfile</code> is not case sensitive</strong>. In the examples, uppercase instructions are used to make it easier to distinguish it from arguments.</li>
+<li>Instructions can be in any order. In the examples, the <code>FROM</code> instruction is first to keep it easily readable.</li>
+</ul>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="openai.md">
+                <div class="file-header">File: openai.md | Repository: ollama/ollama</div>
+                <h2>openai.md</h2>
+                
+
+
+
+<h1 id="openai-compatibility">OpenAI compatibility</h1>
+<blockquote>
+<p>[!NOTE]
+OpenAI compatibility is experimental and is subject to major adjustments including breaking changes. For fully-featured access to the Ollama API, see the Ollama <a href="https://github.com/ollama/ollama-python">Python library</a>, <a href="https://github.com/ollama/ollama-js">JavaScript library</a> and <a href="https://github.com/ollama/ollama/blob/main/docs/api.md">REST API</a>.</p>
+</blockquote>
+<p>Ollama provides experimental compatibility with parts of the <a href="https://platform.openai.com/docs/api-reference">OpenAI API</a> to help connect existing applications to Ollama.</p>
+<h2 id="usage">Usage</h2>
+<h3 id="openai-python-library">OpenAI Python library</h3>
+<pre class="codehilite"><code class="language-python">from openai import OpenAI
+
+client = OpenAI(
+    base_url='http://localhost:11434/v1/',
+
+    # required but ignored
+    api_key='ollama',
+)
+
+chat_completion = client.chat.completions.create(
+    messages=[
+        {
+            'role': 'user',
+            'content': 'Say this is a test',
+        }
+    ],
+    model='llama3.2',
+)
+
+response = client.chat.completions.create(
+    model="llava",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "What's in this image?"},
+                {
+                    "type": "image_url",
+                    "image_url": "data:image/png;base64,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",
+                },
+            ],
+        }
+    ],
+    max_tokens=300,
+)
+
+completion = client.completions.create(
+    model="llama3.2",
+    prompt="Say this is a test",
+)
+
+list_completion = client.models.list()
+
+model = client.models.retrieve("llama3.2")
+
+embeddings = client.embeddings.create(
+    model="all-minilm",
+    input=["why is the sky blue?", "why is the grass green?"],
+)
+</code></pre>
+<h4 id="structured-outputs">Structured outputs</h4>
+<pre class="codehilite"><code class="language-python">from pydantic import BaseModel
+from openai import OpenAI
+
+client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")
+
+# Define the schema for the response
+class FriendInfo(BaseModel):
+    name: str
+    age: int
+    is_available: bool
+
+class FriendList(BaseModel):
+    friends: list[FriendInfo]
+
+try:
+    completion = client.beta.chat.completions.parse(
+        temperature=0,
+        model="llama3.1:8b",
+        messages=[
+            {"role": "user", "content": "I have two friends. The first is Ollama 22 years old busy saving the world, and the second is Alonso 23 years old and wants to hang out. Return a list of friends in JSON format"}
+        ],
+        response_format=FriendList,
+    )
+
+    friends_response = completion.choices[0].message
+    if friends_response.parsed:
+        print(friends_response.parsed)
+    elif friends_response.refusal:
+        print(friends_response.refusal)
+except Exception as e:
+    print(f"Error: {e}")
+</code></pre>
+<h3 id="openai-javascript-library">OpenAI JavaScript library</h3>
+<pre class="codehilite"><code class="language-javascript">import OpenAI from 'openai'
+
+const openai = new OpenAI({
+  baseURL: 'http://localhost:11434/v1/',
+
+  // required but ignored
+  apiKey: 'ollama',
+})
+
+const chatCompletion = await openai.chat.completions.create({
+    messages: [{ role: 'user', content: 'Say this is a test' }],
+    model: 'llama3.2',
+})
+
+const response = await openai.chat.completions.create({
+    model: "llava",
+    messages: [
+        {
+        role: "user",
+        content: [
+            { type: "text", text: "What's in this image?" },
+            {
+            type: "image_url",
+            image_url: "data:image/png;base64,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",
+            },
+        ],
+        },
+    ],
+})
+
+const completion = await openai.completions.create({
+    model: "llama3.2",
+    prompt: "Say this is a test.",
+})
+
+const listCompletion = await openai.models.list()
+
+const model = await openai.models.retrieve("llama3.2")
+
+const embedding = await openai.embeddings.create({
+  model: "all-minilm",
+  input: ["why is the sky blue?", "why is the grass green?"],
+})
+</code></pre>
+<h3 id="curl"><code>curl</code></h3>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "llama3.2",
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a helpful assistant."
+            },
+            {
+                "role": "user",
+                "content": "Hello!"
+            }
+        ]
+    }'
+
+curl http://localhost:11434/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "llava",
+    "messages": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "text",
+            "text": "What'\''s in this image?"
+          },
+          {
+            "type": "image_url",
+            "image_url": {
+               "url": "data:image/png;base64,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"
+            }
+          }
+        ]
+      }
+    ],
+    "max_tokens": 300
+  }'
+
+curl http://localhost:11434/v1/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "llama3.2",
+        "prompt": "Say this is a test"
+    }'
+
+curl http://localhost:11434/v1/models
+
+curl http://localhost:11434/v1/models/llama3.2
+
+curl http://localhost:11434/v1/embeddings \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "all-minilm",
+        "input": ["why is the sky blue?", "why is the grass green?"]
+    }'
+</code></pre>
+<h2 id="endpoints">Endpoints</h2>
+<h3 id="v1chatcompletions"><code>/v1/chat/completions</code></h3>
+<h4 id="supported-features">Supported features</h4>
+<ul>
+<li>[x] Chat completions</li>
+<li>[x] Streaming</li>
+<li>[x] JSON mode</li>
+<li>[x] Reproducible outputs</li>
+<li>[x] Vision</li>
+<li>[x] Tools</li>
+<li>[ ] Logprobs</li>
+</ul>
+<h4 id="supported-request-fields">Supported request fields</h4>
+<ul>
+<li>[x] <code>model</code></li>
+<li>[x] <code>messages</code></li>
+<li>[x] Text <code>content</code></li>
+<li>[x] Image <code>content</code><ul>
+<li>[x] Base64 encoded image</li>
+<li>[ ] Image URL</li>
+</ul>
+</li>
+<li>[x] Array of <code>content</code> parts</li>
+<li>[x] <code>frequency_penalty</code></li>
+<li>[x] <code>presence_penalty</code></li>
+<li>[x] <code>response_format</code></li>
+<li>[x] <code>seed</code></li>
+<li>[x] <code>stop</code></li>
+<li>[x] <code>stream</code></li>
+<li>[x] <code>stream_options</code></li>
+<li>[x] <code>include_usage</code></li>
+<li>[x] <code>temperature</code></li>
+<li>[x] <code>top_p</code></li>
+<li>[x] <code>max_tokens</code></li>
+<li>[x] <code>tools</code></li>
+<li>[ ] <code>tool_choice</code></li>
+<li>[ ] <code>logit_bias</code></li>
+<li>[ ] <code>user</code></li>
+<li>[ ] <code>n</code></li>
+</ul>
+<h3 id="v1completions"><code>/v1/completions</code></h3>
+<h4 id="supported-features_1">Supported features</h4>
+<ul>
+<li>[x] Completions</li>
+<li>[x] Streaming</li>
+<li>[x] JSON mode</li>
+<li>[x] Reproducible outputs</li>
+<li>[ ] Logprobs</li>
+</ul>
+<h4 id="supported-request-fields_1">Supported request fields</h4>
+<ul>
+<li>[x] <code>model</code></li>
+<li>[x] <code>prompt</code></li>
+<li>[x] <code>frequency_penalty</code></li>
+<li>[x] <code>presence_penalty</code></li>
+<li>[x] <code>seed</code></li>
+<li>[x] <code>stop</code></li>
+<li>[x] <code>stream</code></li>
+<li>[x] <code>stream_options</code></li>
+<li>[x] <code>include_usage</code></li>
+<li>[x] <code>temperature</code></li>
+<li>[x] <code>top_p</code></li>
+<li>[x] <code>max_tokens</code></li>
+<li>[x] <code>suffix</code></li>
+<li>[ ] <code>best_of</code></li>
+<li>[ ] <code>echo</code></li>
+<li>[ ] <code>logit_bias</code></li>
+<li>[ ] <code>user</code></li>
+<li>[ ] <code>n</code></li>
+</ul>
+<h4 id="notes">Notes</h4>
+<ul>
+<li><code>prompt</code> currently only accepts a string</li>
+</ul>
+<h3 id="v1models"><code>/v1/models</code></h3>
+<h4 id="notes_1">Notes</h4>
+<ul>
+<li><code>created</code> corresponds to when the model was last modified</li>
+<li><code>owned_by</code> corresponds to the ollama username, defaulting to <code>"library"</code></li>
+</ul>
+<h3 id="v1modelsmodel"><code>/v1/models/{model}</code></h3>
+<h4 id="notes_2">Notes</h4>
+<ul>
+<li><code>created</code> corresponds to when the model was last modified</li>
+<li><code>owned_by</code> corresponds to the ollama username, defaulting to <code>"library"</code></li>
+</ul>
+<h3 id="v1embeddings"><code>/v1/embeddings</code></h3>
+<h4 id="supported-request-fields_2">Supported request fields</h4>
+<ul>
+<li>[x] <code>model</code></li>
+<li>[x] <code>input</code></li>
+<li>[x] string</li>
+<li>[x] array of strings</li>
+<li>[ ] array of tokens</li>
+<li>[ ] array of token arrays</li>
+<li>[ ] <code>encoding format</code></li>
+<li>[ ] <code>dimensions</code></li>
+<li>[ ] <code>user</code></li>
+</ul>
+<h2 id="models">Models</h2>
+<p>Before using a model, pull it locally <code>ollama pull</code>:</p>
+<pre class="codehilite"><code class="language-shell">ollama pull llama3.2
+</code></pre>
+<h3 id="default-model-names">Default model names</h3>
+<p>For tooling that relies on default OpenAI model names such as <code>gpt-3.5-turbo</code>, use <code>ollama cp</code> to copy an existing model name to a temporary name:</p>
+<pre class="codehilite"><code class="language-shell">ollama cp llama3.2 gpt-3.5-turbo
+</code></pre>
+<p>Afterwards, this new model name can be specified the <code>model</code> field:</p>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "gpt-3.5-turbo",
+        "messages": [
+            {
+                "role": "user",
+                "content": "Hello!"
+            }
+        ]
+    }'
+</code></pre>
+<h3 id="setting-the-context-size">Setting the context size</h3>
+<p>The OpenAI API does not have a way of setting the context size for a model. If you need to change the context size, create a <code>Modelfile</code> which looks like:</p>
+<pre class="codehilite"><code>FROM &lt;some model&gt;
+PARAMETER num_ctx &lt;context size&gt;
+</code></pre>
+<p>Use the <code>ollama create mymodel</code> command to create a new model with the updated context size. Call the API with the updated model name:</p>
+<pre class="codehilite"><code class="language-shell">curl http://localhost:11434/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{
+        "model": "mymodel",
+        "messages": [
+            {
+                "role": "user",
+                "content": "Hello!"
+            }
+        ]
+    }'
+</code></pre>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="template.md">
+                <div class="file-header">File: template.md | Repository: ollama/ollama</div>
+                <h2>template.md</h2>
+                
+
+
+
+<h1 id="template">Template</h1>
+<p>Ollama provides a powerful templating engine backed by Go's built-in templating engine to construct prompts for your large language model. This feature is a valuable tool to get the most out of your models.</p>
+<h2 id="basic-template-structure">Basic Template Structure</h2>
+<p>A basic Go template consists of three main parts:</p>
+<ul>
+<li><strong>Layout</strong>: The overall structure of the template.</li>
+<li><strong>Variables</strong>: Placeholders for dynamic data that will be replaced with actual values when the template is rendered.</li>
+<li><strong>Functions</strong>: Custom functions or logic that can be used to manipulate the template's content.</li>
+</ul>
+<p>Here's an example of a simple chat template:</p>
+<pre class="codehilite"><code class="language-go">{{- range .Messages }}
+{{ .Role }}: {{ .Content }}
+{{- end }}
+</code></pre>
+<p>In this example, we have:</p>
+<ul>
+<li>A basic messages structure (layout)</li>
+<li>Three variables: <code>Messages</code>, <code>Role</code>, and <code>Content</code> (variables)</li>
+<li>A custom function (action) that iterates over an array of items (<code>range .Messages</code>) and displays each item</li>
+</ul>
+<h2 id="adding-templates-to-your-model">Adding templates to your model</h2>
+<p>By default, models imported into Ollama have a default template of <code>{{ .Prompt }}</code>, i.e. user inputs are sent verbatim to the LLM. This is appropriate for text or code completion models but lacks essential markers for chat or instruction models.</p>
+<p>Omitting a template in these models puts the responsibility of correctly templating input onto the user. Adding a template allows users to easily get the best results from the model.</p>
+<p>To add templates in your model, you'll need to add a <code>TEMPLATE</code> command to the Modelfile. Here's an example using Meta's Llama 3.</p>
+<pre class="codehilite"><code class="language-dockerfile">FROM llama3.2
+
+TEMPLATE """{{- if .System }}&lt;|start_header_id|&gt;system&lt;|end_header_id|&gt;
+
+{{ .System }}&lt;|eot_id|&gt;
+{{- end }}
+{{- range .Messages }}&lt;|start_header_id|&gt;{{ .Role }}&lt;|end_header_id|&gt;
+
+{{ .Content }}&lt;|eot_id|&gt;
+{{- end }}&lt;|start_header_id|&gt;assistant&lt;|end_header_id|&gt;
+
+"""
+</code></pre>
+<h2 id="variables">Variables</h2>
+<p><code>System</code> (string): system prompt</p>
+<p><code>Prompt</code> (string): user prompt</p>
+<p><code>Response</code> (string): assistant response</p>
+<p><code>Suffix</code> (string): text inserted after the assistant's response</p>
+<p><code>Messages</code> (list): list of messages</p>
+<p><code>Messages[].Role</code> (string): role which can be one of <code>system</code>, <code>user</code>, <code>assistant</code>, or <code>tool</code></p>
+<p><code>Messages[].Content</code> (string):  message content</p>
+<p><code>Messages[].ToolCalls</code> (list): list of tools the model wants to call</p>
+<p><code>Messages[].ToolCalls[].Function</code> (object): function to call</p>
+<p><code>Messages[].ToolCalls[].Function.Name</code> (string): function name</p>
+<p><code>Messages[].ToolCalls[].Function.Arguments</code> (map): mapping of argument name to argument value</p>
+<p><code>Tools</code> (list): list of tools the model can access</p>
+<p><code>Tools[].Type</code> (string): schema type. <code>type</code> is always <code>function</code></p>
+<p><code>Tools[].Function</code> (object): function definition</p>
+<p><code>Tools[].Function.Name</code> (string): function name</p>
+<p><code>Tools[].Function.Description</code> (string): function description</p>
+<p><code>Tools[].Function.Parameters</code> (object): function parameters</p>
+<p><code>Tools[].Function.Parameters.Type</code> (string): schema type. <code>type</code> is always <code>object</code></p>
+<p><code>Tools[].Function.Parameters.Required</code> (list): list of required properties</p>
+<p><code>Tools[].Function.Parameters.Properties</code> (map): mapping of property name to property definition</p>
+<p><code>Tools[].Function.Parameters.Properties[].Type</code> (string): property type</p>
+<p><code>Tools[].Function.Parameters.Properties[].Description</code> (string): property description</p>
+<p><code>Tools[].Function.Parameters.Properties[].Enum</code> (list): list of valid values</p>
+<h2 id="tips-and-best-practices">Tips and Best Practices</h2>
+<p>Keep the following tips and best practices in mind when working with Go templates:</p>
+<ul>
+<li><strong>Be mindful of dot</strong>: Control flow structures like <code>range</code> and <code>with</code> changes the value <code>.</code></li>
+<li><strong>Out-of-scope variables</strong>: Use <code>$.</code> to reference variables not currently in scope, starting from the root</li>
+<li><strong>Whitespace control</strong>: Use <code>-</code> to trim leading (<code>{{-</code>) and trailing (<code>-}}</code>) whitespace</li>
+</ul>
+<h2 id="examples">Examples</h2>
+<h3 id="example-messages">Example Messages</h3>
+<h4 id="chatml">ChatML</h4>
+<p>ChatML is a popular template format. It can be used for models such as Databrick's DBRX, Intel's Neural Chat, and Microsoft's Orca 2.</p>
+<pre class="codehilite"><code class="language-go">{{- range .Messages }}&lt;|im_start|&gt;{{ .Role }}
+{{ .Content }}&lt;|im_end|&gt;
+{{ end }}&lt;|im_start|&gt;assistant
+</code></pre>
+<h3 id="example-tools">Example Tools</h3>
+<p>Tools support can be added to a model by adding a <code>{{ .Tools }}</code> node to the template. This feature is useful for models trained to call external tools and can a powerful tool for retrieving real-time data or performing complex tasks.</p>
+<h4 id="mistral">Mistral</h4>
+<p>Mistral v0.3 and Mixtral 8x22B supports tool calling.</p>
+<pre class="codehilite"><code class="language-go">{{- range $index, $_ := .Messages }}
+{{- if eq .Role "user" }}
+{{- if and (le (len (slice $.Messages $index)) 2) $.Tools }}[AVAILABLE_TOOLS] {{ json $.Tools }}[/AVAILABLE_TOOLS]
+{{- end }}[INST] {{ if and (eq (len (slice $.Messages $index)) 1) $.System }}{{ $.System }}
+
+{{ end }}{{ .Content }}[/INST]
+{{- else if eq .Role "assistant" }}
+{{- if .Content }} {{ .Content }}&lt;/s&gt;
+{{- else if .ToolCalls }}[TOOL_CALLS] [
+{{- range .ToolCalls }}{"name": "{{ .Function.Name }}", "arguments": {{ json .Function.Arguments }}}
+{{- end }}]&lt;/s&gt;
+{{- end }}
+{{- else if eq .Role "tool" }}[TOOL_RESULTS] {"content": {{ .Content }}}[/TOOL_RESULTS]
+{{- end }}
+{{- end }}
+</code></pre>
+<h3 id="example-fill-in-middle">Example Fill-in-Middle</h3>
+<p>Fill-in-middle support can be added to a model by adding a <code>{{ .Suffix }}</code> node to the template. This feature is useful for models that are trained to generate text in the middle of user input, such as code completion models.</p>
+<h4 id="codellama">CodeLlama</h4>
+<p>CodeLlama <a href="https://ollama.com/library/codellama:7b-code">7B</a> and <a href="https://ollama.com/library/codellama:13b-code">13B</a> code completion models support fill-in-middle.</p>
+<pre class="codehilite"><code class="language-go">&lt;PRE&gt; {{ .Prompt }} &lt;SUF&gt;{{ .Suffix }} &lt;MID&gt;
+</code></pre>
+<blockquote>
+<p>[!NOTE]
+CodeLlama 34B and 70B code completion and all instruct and Python fine-tuned models do not support fill-in-middle.</p>
+</blockquote>
+<h4 id="codestral">Codestral</h4>
+<p>Codestral <a href="https://ollama.com/library/codestral:22b">22B</a> supports fill-in-middle.</p>
+<pre class="codehilite"><code class="language-go">[SUFFIX]{{ .Suffix }}[PREFIX] {{ .Prompt }}
+</code></pre>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="troubleshooting.md">
+                <div class="file-header">File: troubleshooting.md | Repository: ollama/ollama</div>
+                <h2>troubleshooting.md</h2>
+                
+
+
+
+<h1 id="how-to-troubleshoot-issues">How to troubleshoot issues</h1>
+<p>Sometimes Ollama may not perform as expected. One of the best ways to figure out what happened is to take a look at the logs. Find the logs on <strong>Mac</strong> by running the command:</p>
+<pre class="codehilite"><code class="language-shell">cat ~/.ollama/logs/server.log
+</code></pre>
+<p>On <strong>Linux</strong> systems with systemd, the logs can be found with this command:</p>
+<pre class="codehilite"><code class="language-shell">journalctl -u ollama --no-pager --follow --pager-end
+</code></pre>
+<p>When you run Ollama in a <strong>container</strong>, the logs go to stdout/stderr in the container:</p>
+<pre class="codehilite"><code class="language-shell">docker logs &lt;container-name&gt;
+</code></pre>
+<p>(Use <code>docker ps</code> to find the container name)</p>
+<p>If manually running <code>ollama serve</code> in a terminal, the logs will be on that terminal.</p>
+<p>When you run Ollama on <strong>Windows</strong>, there are a few different locations. You can view them in the explorer window by hitting <code>&lt;cmd&gt;+R</code> and type in:
+- <code>explorer %LOCALAPPDATA%\Ollama</code> to view logs.  The most recent server logs will be in <code>server.log</code> and older logs will be in <code>server-#.log</code>
+- <code>explorer %LOCALAPPDATA%\Programs\Ollama</code> to browse the binaries (The installer adds this to your user PATH)
+- <code>explorer %HOMEPATH%\.ollama</code> to browse where models and configuration is stored</p>
+<p>To enable additional debug logging to help troubleshoot problems, first <strong>Quit the running app from the tray menu</strong> then in a powershell terminal</p>
+<pre class="codehilite"><code class="language-powershell">$env:OLLAMA_DEBUG="1"
+&amp; "ollama app.exe"
+</code></pre>
+<p>Join the <a href="https://discord.gg/ollama">Discord</a> for help interpreting the logs.</p>
+<h2 id="llm-libraries">LLM libraries</h2>
+<p>Ollama includes multiple LLM libraries compiled for different GPUs and CPU vector features. Ollama tries to pick the best one based on the capabilities of your system. If this autodetection has problems, or you run into other problems (e.g. crashes in your GPU) you can workaround this by forcing a specific LLM library. <code>cpu_avx2</code> will perform the best, followed by <code>cpu_avx</code> and the slowest but most compatible is <code>cpu</code>. Rosetta emulation under MacOS will work with the <code>cpu</code> library.</p>
+<p>In the server log, you will see a message that looks something like this (varies from release to release):</p>
+<pre class="codehilite"><code>Dynamic LLM libraries [rocm_v6 cpu cpu_avx cpu_avx2 cuda_v12 rocm_v5]
+</code></pre>
+<p><strong>Experimental LLM Library Override</strong></p>
+<p>You can set OLLAMA_LLM_LIBRARY to any of the available LLM libraries to bypass autodetection, so for example, if you have a CUDA card, but want to force the CPU LLM library with AVX2 vector support, use:</p>
+<pre class="codehilite"><code class="language-shell">OLLAMA_LLM_LIBRARY="cpu_avx2" ollama serve
+</code></pre>
+<p>You can see what features your CPU has with the following.</p>
+<pre class="codehilite"><code class="language-shell">cat /proc/cpuinfo| grep flags | head -1
+</code></pre>
+<h2 id="installing-older-or-pre-release-versions-on-linux">Installing older or pre-release versions on Linux</h2>
+<p>If you run into problems on Linux and want to install an older version, or you'd like to try out a pre-release before it's officially released, you can tell the install script which version to install.</p>
+<pre class="codehilite"><code class="language-shell">curl -fsSL https://ollama.com/install.sh | OLLAMA_VERSION=0.5.7 sh
+</code></pre>
+<h2 id="linux-docker">Linux docker</h2>
+<p>If Ollama initially works on the GPU in a docker container, but then switches to running on CPU after some period of time with errors in the server log reporting GPU discovery failures, this can be resolved by disabling systemd cgroup management in Docker.  Edit <code>/etc/docker/daemon.json</code> on the host and add <code>"exec-opts": ["native.cgroupdriver=cgroupfs"]</code> to the docker configuration.</p>
+<h2 id="nvidia-gpu-discovery">NVIDIA GPU Discovery</h2>
+<p>When Ollama starts up, it takes inventory of the GPUs present in the system to determine compatibility and how much VRAM is available.  Sometimes this discovery can fail to find your GPUs.  In general, running the latest driver will yield the best results.</p>
+<h3 id="linux-nvidia-troubleshooting">Linux NVIDIA Troubleshooting</h3>
+<p>If you are using a container to run Ollama, make sure you've set up the container runtime first as described in <a href="./docker.md">docker.md</a></p>
+<p>Sometimes the Ollama can have difficulties initializing the GPU. When you check the server logs, this can show up as various error codes, such as "3" (not initialized), "46" (device unavailable), "100" (no device), "999" (unknown), or others. The following troubleshooting techniques may help resolve the problem</p>
+<ul>
+<li>If you are using a container, is the container runtime working?  Try <code>docker run --gpus all ubuntu nvidia-smi</code> - if this doesn't work, Ollama won't be able to see your NVIDIA GPU.</li>
+<li>Is the uvm driver loaded? <code>sudo nvidia-modprobe -u</code></li>
+<li>Try reloading the nvidia_uvm driver - <code>sudo rmmod nvidia_uvm</code> then <code>sudo modprobe nvidia_uvm</code></li>
+<li>Try rebooting</li>
+<li>Make sure you're running the latest nvidia drivers</li>
+</ul>
+<p>If none of those resolve the problem, gather additional information and file an issue:
+- Set <code>CUDA_ERROR_LEVEL=50</code> and try again to get more diagnostic logs
+- Check dmesg for any errors <code>sudo dmesg | grep -i nvrm</code> and <code>sudo dmesg | grep -i nvidia</code></p>
+<h2 id="amd-gpu-discovery">AMD GPU Discovery</h2>
+<p>On linux, AMD GPU access typically requires <code>video</code> and/or <code>render</code> group membership to access the <code>/dev/kfd</code> device.  If permissions are not set up correctly, Ollama will detect this and report an error in the server log.</p>
+<p>When running in a container, in some Linux distributions and container runtimes, the ollama process may be unable to access the GPU.  Use <code>ls -lnd /dev/kfd /dev/dri /dev/dri/*</code> on the host system to determine the <strong>numeric</strong> group IDs on your system, and pass additional <code>--group-add ...</code> arguments to the container so it can access the required devices.   For example, in the following output <code>crw-rw---- 1 0  44 226,   0 Sep 16 16:55 /dev/dri/card0</code> the group ID column is <code>44</code></p>
+<p>If you are experiencing problems getting Ollama to correctly discover or use your GPU for inference, the following may help isolate the failure.
+- <code>AMD_LOG_LEVEL=3</code> Enable info log levels in the AMD HIP/ROCm libraries.  This can help show more detailed error codes that can help troubleshoot problems
+- <code>OLLAMA_DEBUG=1</code> During GPU discovery additional information will be reported
+- Check dmesg for any errors from amdgpu or kfd drivers <code>sudo dmesg | grep -i amdgpu</code> and <code>sudo dmesg | grep -i kfd</code></p>
+<h2 id="multiple-amd-gpus">Multiple AMD GPUs</h2>
+<p>If you experience gibberish responses when models load across multiple AMD GPUs on Linux, see the following guide.</p>
+<ul>
+<li>https://rocm.docs.amd.com/projects/radeon/en/latest/docs/install/native_linux/mgpu.html#mgpu-known-issues-and-limitations</li>
+</ul>
+<h2 id="windows-terminal-errors">Windows Terminal Errors</h2>
+<p>Older versions of Windows 10 (e.g., 21H1) are known to have a bug where the standard terminal program does not display control characters correctly.  This can result in a long string of strings like <code>←[?25h←[?25l</code> being displayed, sometimes erroring with <code>The parameter is incorrect</code>  To resolve this problem, please update to Win 10 22H1 or newer.</p>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            <div class="page-break"></div>
+            <div id="windows.md">
+                <div class="file-header">File: windows.md | Repository: ollama/ollama</div>
+                <h2>windows.md</h2>
+                
+
+
+
+<h1 id="ollama-windows">Ollama Windows</h1>
+<p>Welcome to Ollama for Windows.</p>
+<p>No more WSL required!</p>
+<p>Ollama now runs as a native Windows application, including NVIDIA and AMD Radeon GPU support.
+After installing Ollama for Windows, Ollama will run in the background and
+the <code>ollama</code> command line is available in <code>cmd</code>, <code>powershell</code> or your favorite
+terminal application. As usual the Ollama <a href="./api.md">api</a> will be served on
+<code>http://localhost:11434</code>.</p>
+<h2 id="system-requirements">System Requirements</h2>
+<ul>
+<li>Windows 10 22H2 or newer, Home or Pro</li>
+<li>NVIDIA 452.39 or newer Drivers if you have an NVIDIA card</li>
+<li>AMD Radeon Driver https://www.amd.com/en/support if you have a Radeon card</li>
+</ul>
+<p>Ollama uses unicode characters for progress indication, which may render as unknown squares in some older terminal fonts in Windows 10. If you see this, try changing your terminal font settings.</p>
+<h2 id="filesystem-requirements">Filesystem Requirements</h2>
+<p>The Ollama install does not require Administrator, and installs in your home directory by default.  You'll need at least 4GB of space for the binary install.  Once you've installed Ollama, you'll need additional space for storing the Large Language models, which can be tens to hundreds of GB in size.  If your home directory doesn't have enough space, you can change where the binaries are installed, and where the models are stored.</p>
+<h3 id="changing-install-location">Changing Install Location</h3>
+<p>To install the Ollama application in a location different than your home directory, start the installer with the following flag</p>
+<pre class="codehilite"><code class="language-powershell">OllamaSetup.exe /DIR="d:\some\location"
+</code></pre>
+<h2 id="api-access">API Access</h2>
+<p>Here's a quick example showing API access from <code>powershell</code></p>
+<pre class="codehilite"><code class="language-powershell">(Invoke-WebRequest -method POST -Body '{"model":"llama3.2", "prompt":"Why is the sky blue?", "stream": false}' -uri http://localhost:11434/api/generate ).Content | ConvertFrom-json
+</code></pre>
+<h2 id="troubleshooting">Troubleshooting</h2>
+<p>Ollama on Windows stores files in a few different locations.  You can view them in
+the explorer window by hitting <code>&lt;Ctrl&gt;+R</code> and type in:
+- <code>explorer %LOCALAPPDATA%\Ollama</code> contains logs, and downloaded updates
+    - <em>app.log</em> contains most resent logs from the GUI application
+    - <em>server.log</em> contains the most recent server logs
+    - <em>upgrade.log</em> contains log output for upgrades
+- <code>explorer %LOCALAPPDATA%\Programs\Ollama</code> contains the binaries (The installer adds this to your user PATH)
+- <code>explorer %HOMEPATH%\.ollama</code> contains models and configuration</p>
+<h2 id="uninstall">Uninstall</h2>
+<p>The Ollama Windows installer registers an Uninstaller application.  Under <code>Add or remove programs</code> in Windows Settings, you can uninstall Ollama.</p>
+<blockquote>
+<p>[!NOTE]
+If you have <a href="#changing-model-location">changed the OLLAMA_MODELS location</a>, the installer will not remove your downloaded models</p>
+</blockquote>
+<h2 id="standalone-cli">Standalone CLI</h2>
+<p>The easiest way to install Ollama on Windows is to use the <code>OllamaSetup.exe</code>
+installer. It installs in your account without requiring Administrator rights.
+We update Ollama regularly to support the latest models, and this installer will
+help you keep up to date.</p>
+<p>If you'd like to install or integrate Ollama as a service, a standalone
+<code>ollama-windows-amd64.zip</code> zip file is available containing only the Ollama CLI
+and GPU library dependencies for Nvidia.  If you have an AMD GPU, also download
+and extract the additional ROCm package <code>ollama-windows-amd64-rocm.zip</code> into the
+same directory.  This allows for embedding Ollama in existing applications, or
+running it as a system service via <code>ollama serve</code> with tools such as
+<a href="https://nssm.cc/">NSSM</a>. </p>
+<blockquote>
+<p>[!NOTE]<br/>
+If you are upgrading from a prior version, you should remove the old directories first.</p>
+</blockquote>
+
+            </div>
+            <hr style="margin-top: 2em; margin-bottom: 2em; border: none; border-top: 1px solid #d0d7de;">
+            </body></html>
