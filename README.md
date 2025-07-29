@@ -21,6 +21,7 @@
                                     ║  SOLI • DEO • GLORIA  ║
                                     ╚═══════════════════════╝
 Copyright (c) 2025 Kaxo Technologies
+
 Contact: tech [ a t ] kaxo.io
 
 # Documentation Harvester Suite
