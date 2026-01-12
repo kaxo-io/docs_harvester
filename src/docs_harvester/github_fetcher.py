@@ -165,8 +165,12 @@ class GitHubDocFetcher:
             logger.error("Error fetching files from %s: %s", api_url, e)
             return []
 
-    def download_markdown_files(self) -> None:
-        """Download all markdown files from the repository."""
+    def download_markdown_files(self, auto_save_interval: int = 10) -> None:
+        """Download all markdown files from the repository.
+
+        Args:
+            auto_save_interval: Save progress every N files (0 to disable)
+        """
         logger.info("Fetching markdown files from %s/%s", self.owner, self.repo)
 
         md_files = self.get_files_recursive()
@@ -176,9 +180,11 @@ class GitHubDocFetcher:
             return
 
         logger.info("Found %d markdown files", len(md_files))
+        files_since_save = 0
 
-        for file_info in md_files:
+        for idx, file_info in enumerate(md_files, 1):
             try:
+                logger.info("Downloading [%d/%d]: %s", idx, len(md_files), file_info["name"])
                 response = self.session.get(file_info["url"], timeout=DEFAULT_TIMEOUT)
                 response.raise_for_status()
                 content = response.text
@@ -187,8 +193,6 @@ class GitHubDocFetcher:
                 output_path = self.md_dir / file_info["name"]
                 with open(output_path, "w", encoding="utf-8") as f:
                     f.write(content)
-
-                logger.info("Downloaded: %s", file_info["name"])
 
                 # Convert to HTML and store
                 html_content = markdown.markdown(content, extensions=["extra", "codehilite"])
@@ -205,6 +209,14 @@ class GitHubDocFetcher:
                         path=file_info["path"],
                     )
                 )
+
+                files_since_save += 1
+
+                # Auto-save progress
+                if auto_save_interval > 0 and files_since_save >= auto_save_interval:
+                    logger.info("Auto-saving progress (%d files downloaded)...", len(self.pages))
+                    self.save_json()
+                    files_since_save = 0
 
                 # Be nice to GitHub
                 time.sleep(0.5)
