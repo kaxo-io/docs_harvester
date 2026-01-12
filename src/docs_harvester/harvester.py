@@ -256,17 +256,19 @@ class DocHarvester:
 
         return True
 
-    def crawl_documentation(self, max_pages: int = 100) -> None:
+    def crawl_documentation(self, max_pages: int = 100, auto_save_interval: int = 10) -> None:
         """Crawl the documentation site.
 
         Args:
             max_pages: Maximum number of pages to crawl
+            auto_save_interval: Save progress every N pages (0 to disable)
         """
         logger.info("Starting crawl of %s", self.base_url)
         if self.github_path_restriction:
             logger.info("GitHub path restriction: %s", self.github_path_restriction)
 
         to_visit = {self.base_url}
+        pages_since_save = 0
 
         while to_visit and len(self.visited_urls) < max_pages:
             url = to_visit.pop()
@@ -285,13 +287,20 @@ class DocHarvester:
                     break
                 continue
 
-            logger.info("Processing: %s", url)
+            logger.info("Processing [%d/%d]: %s", len(self.visited_urls) + 1, max_pages, url)
             self.visited_urls.add(url)
 
             # Get page content
             page_data = self.get_page_content(url)
             if page_data:
                 self.pages.append(page_data)
+                pages_since_save += 1
+
+                # Auto-save progress
+                if auto_save_interval > 0 and pages_since_save >= auto_save_interval:
+                    logger.info("Auto-saving progress (%d pages collected)...", len(self.pages))
+                    self.save_json()
+                    pages_since_save = 0
 
             # Find more links
             new_links = self.find_doc_links(url)
