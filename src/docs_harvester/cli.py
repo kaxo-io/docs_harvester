@@ -22,8 +22,8 @@ def main() -> None:
     parser.add_argument(
         "--max-pages",
         type=int,
-        default=100,
-        help="Maximum pages to crawl (default: 100)",
+        default=None,
+        help="Maximum pages to crawl (default: unlimited)",
     )
     parser.add_argument(
         "--output-dir",
