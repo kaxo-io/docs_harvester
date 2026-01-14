@@ -283,13 +283,17 @@ class DocHarvester:
 
         return True
 
-    def load_existing_pages(self) -> None:
-        """Load previously scraped pages from JSON file for incremental scraping."""
+    def load_existing_pages(self) -> set[str]:
+        """Load previously scraped pages from JSON file for incremental scraping.
+
+        Returns:
+            Set of frontier URLs discovered from existing pages
+        """
         json_file = self.project_dir / f"{self.domain.replace('.', '_')}_docs.json"
 
         if not json_file.exists():
             logger.info("No existing JSON file found. Starting fresh crawl.")
-            return
+            return set()
 
         try:
             with open(json_file, encoding="utf-8") as f:
@@ -304,15 +308,31 @@ class DocHarvester:
                 len(self.pages),
                 json_file,
             )
+
+            # Re-discover frontier URLs from recent pages to continue crawl
+            logger.info("Re-discovering frontier URLs to continue crawl...")
+            pages_to_check = self.pages[-20:] if len(self.pages) > 20 else self.pages
+
+            frontier_urls: set[str] = set()
+            for page in pages_to_check:
+                new_links = self.find_doc_links(page["url"])
+                frontier_urls.update(new_links - self.visited_urls)
+
+            logger.info("Found %d unvisited URLs to continue crawl", len(frontier_urls))
+            return frontier_urls
+
         except Exception as e:
             logger.error("Failed to load existing pages: %s", e)
             logger.info("Starting fresh crawl.")
+            return set()
 
-    def crawl_documentation(self, max_pages: int = 100, auto_save_interval: int = 10) -> None:
+    def crawl_documentation(
+        self, max_pages: int | None = None, auto_save_interval: int = 10
+    ) -> None:
         """Crawl the documentation site.
 
         Args:
-            max_pages: Maximum number of pages to crawl
+            max_pages: Maximum number of pages to crawl (None for unlimited)
             auto_save_interval: Save progress every N pages (0 to disable)
         """
         logger.info("Starting crawl of %s", self.base_url)
@@ -321,12 +341,15 @@ class DocHarvester:
 
         # Load existing pages if in incremental mode
         if self.incremental:
-            self.load_existing_pages()
+            frontier_urls = self.load_existing_pages()
+            to_visit = frontier_urls if frontier_urls else {self.base_url}
+        else:
+            to_visit = {self.base_url}
 
-        to_visit = {self.base_url}
         pages_since_save = 0
 
-        while to_visit and len(self.visited_urls) < max_pages:
+        # Loop condition: continue while we have URLs and haven't hit max_pages limit
+        while to_visit and (max_pages is None or len(self.visited_urls) < max_pages):
             url = to_visit.pop()
 
             if url in self.visited_urls:
@@ -343,7 +366,12 @@ class DocHarvester:
                     break
                 continue
 
-            logger.info("Processing [%d/%d]: %s", len(self.visited_urls) + 1, max_pages, url)
+            # Show progress with or without max_pages limit
+            if max_pages is not None:
+                logger.info("Processing [%d/%d]: %s", len(self.visited_urls) + 1, max_pages, url)
+            else:
+                logger.info("Processing [%d]: %s", len(self.visited_urls) + 1, url)
+
             self.visited_urls.add(url)
 
             # Get page content
