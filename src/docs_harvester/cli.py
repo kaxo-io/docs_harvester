@@ -47,6 +47,12 @@ def main() -> None:
         help="Skip pages that were already scraped (based on existing output files)",
     )
     parser.add_argument(
+        "--cache-ttl",
+        type=int,
+        metavar="SECONDS",
+        help="Enable HTTP caching with specified TTL in seconds (e.g., 3600 for 1 hour)",
+    )
+    parser.add_argument(
         "-v",
         "--verbose",
         action="store_true",
@@ -67,6 +73,7 @@ def main() -> None:
         args.output_dir,
         no_images=args.no_images,
         incremental=args.incremental,
+        cache_ttl=args.cache_ttl,
     )
     harvester.crawl_documentation(args.max_pages)
 

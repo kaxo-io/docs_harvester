@@ -23,6 +23,7 @@ from docs_harvester.http import DEFAULT_TIMEOUT, create_session
 
 if TYPE_CHECKING:
     from requests import Session
+    from requests_cache import CachedSession
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,7 @@ class DocHarvester:
         output_dir: str = "harvested_docs",
         no_images: bool = False,
         incremental: bool = False,
+        cache_ttl: int | None = None,
     ) -> None:
         """Initialize the documentation harvester.
 
@@ -53,6 +55,7 @@ class DocHarvester:
             output_dir: Output directory for harvested documents
             no_images: Strip images from output content
             incremental: Skip pages that were already scraped
+            cache_ttl: Optional HTTP cache TTL in seconds
         """
         self.base_url = base_url.rstrip("/")
         self.domain = urlparse(base_url).netloc
@@ -81,7 +84,7 @@ class DocHarvester:
                 self.github_path_restriction = parts[1]
 
         # Create HTTP session
-        self.session: Session = create_session()
+        self.session: Session | CachedSession = create_session(cache_ttl=cache_ttl)
 
         # Common selectors for different doc frameworks
         self.content_selectors = [
@@ -119,7 +122,7 @@ class DocHarvester:
         try:
             response = self.session.get(url, timeout=DEFAULT_TIMEOUT)
             response.raise_for_status()
-            soup = BeautifulSoup(response.content, "html.parser")
+            soup = BeautifulSoup(response.content, "lxml")
 
             # Find main content using common selectors
             content = None
