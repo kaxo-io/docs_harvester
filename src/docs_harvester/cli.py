@@ -32,9 +32,19 @@ def main() -> None:
     )
     parser.add_argument(
         "--format",
-        choices=["pdf", "json", "both"],
+        choices=["pdf", "json", "html", "both"],
         default="both",
-        help="Output format (default: both)",
+        help="Output format: pdf, json, html, or both (pdf+json) (default: both)",
+    )
+    parser.add_argument(
+        "--no-images",
+        action="store_true",
+        help="Strip images from output (useful for JSON-only or text-focused scraping)",
+    )
+    parser.add_argument(
+        "--incremental",
+        action="store_true",
+        help="Skip pages that were already scraped (based on existing output files)",
     )
     parser.add_argument(
         "-v",
@@ -52,12 +62,20 @@ def main() -> None:
     )
 
     # Create harvester and run
-    harvester = DocHarvester(args.url, args.output_dir)
+    harvester = DocHarvester(
+        args.url,
+        args.output_dir,
+        no_images=args.no_images,
+        incremental=args.incremental,
+    )
     harvester.crawl_documentation(args.max_pages)
 
     # Generate outputs
     if args.format in ["json", "both"]:
         harvester.save_json()
+
+    if args.format in ["html"]:
+        harvester.save_html()
 
     if args.format in ["pdf", "both"]:
         harvester.generate_pdf()

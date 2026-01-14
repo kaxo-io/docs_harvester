@@ -39,12 +39,20 @@ class PageData(TypedDict):
 class DocHarvester:
     """Scrape and compile documentation into PDF and JSON formats."""
 
-    def __init__(self, base_url: str, output_dir: str = "harvested_docs") -> None:
+    def __init__(
+        self,
+        base_url: str,
+        output_dir: str = "harvested_docs",
+        no_images: bool = False,
+        incremental: bool = False,
+    ) -> None:
         """Initialize the documentation harvester.
 
         Args:
             base_url: Base URL of the documentation site
             output_dir: Output directory for harvested documents
+            no_images: Strip images from output content
+            incremental: Skip pages that were already scraped
         """
         self.base_url = base_url.rstrip("/")
         self.domain = urlparse(base_url).netloc
@@ -58,6 +66,8 @@ class DocHarvester:
 
         self.visited_urls: set[str] = set()
         self.pages: list[PageData] = []
+        self.no_images = no_images
+        self.incremental = incremental
 
         # Safety limits
         self.non_docs_count = 0
@@ -139,6 +149,19 @@ class DocHarvester:
             for class_name in ("sidebar", "navigation", "nav", "toc", "menu"):
                 for elem in content.find_all(class_=class_name):
                     elem.decompose()
+
+            # Strip images if requested
+            if self.no_images:
+                for img in content.find_all("img"):
+                    img.decompose()
+            else:
+                # Fix relative image URLs to absolute (for WeasyPrint)
+                for img in content.find_all("img"):
+                    src = img.get("src")
+                    if src and isinstance(src, str):
+                        # Convert relative URLs to absolute
+                        absolute_url = urljoin(url, src)
+                        img["src"] = absolute_url
 
             # Get title
             title_elem = soup.find("h1")
@@ -256,6 +279,31 @@ class DocHarvester:
 
         return True
 
+    def load_existing_pages(self) -> None:
+        """Load previously scraped pages from JSON file for incremental scraping."""
+        json_file = self.project_dir / f"{self.domain.replace('.', '_')}_docs.json"
+
+        if not json_file.exists():
+            logger.info("No existing JSON file found. Starting fresh crawl.")
+            return
+
+        try:
+            with open(json_file, encoding="utf-8") as f:
+                existing_pages = json.load(f)
+
+            # Load existing pages and mark URLs as visited
+            self.pages = existing_pages
+            self.visited_urls = {page["url"] for page in existing_pages}
+
+            logger.info(
+                "Loaded %d existing pages from %s (incremental mode)",
+                len(self.pages),
+                json_file,
+            )
+        except Exception as e:
+            logger.error("Failed to load existing pages: %s", e)
+            logger.info("Starting fresh crawl.")
+
     def crawl_documentation(self, max_pages: int = 100, auto_save_interval: int = 10) -> None:
         """Crawl the documentation site.
 
@@ -266,6 +314,10 @@ class DocHarvester:
         logger.info("Starting crawl of %s", self.base_url)
         if self.github_path_restriction:
             logger.info("GitHub path restriction: %s", self.github_path_restriction)
+
+        # Load existing pages if in incremental mode
+        if self.incremental:
+            self.load_existing_pages()
 
         to_visit = {self.base_url}
         pages_since_save = 0
@@ -373,6 +425,61 @@ class DocHarvester:
         except Exception as e:
             logger.error("PDF generation failed: %s", e)
             logger.info("HTML saved to: %s", html_file)
+
+    def save_html(self, filename: str | None = None) -> None:
+        """Save collected pages as a single HTML file.
+
+        Args:
+            filename: Output filename (default: {domain}_docs.html)
+        """
+        if not filename:
+            filename = f"{self.domain.replace('.', '_')}_docs.html"
+
+        # Sort pages by URL for logical order
+        self.pages.sort(key=lambda x: x["url"])
+
+        # Create HTML document
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset="utf-8">
+            <title>{self.domain} Documentation</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 2cm; }}
+                h1, h2, h3 {{ color: #333; }}
+                .page-break {{ margin-top: 3em; padding-top: 2em; border-top: 2px solid #ddd; }}
+                .url {{ color: #666; font-size: 0.8em; margin-bottom: 1em; }}
+                pre {{ background: #f5f5f5; padding: 1em; overflow: auto; }}
+                code {{ background: #f0f0f0; padding: 0.2em; }}
+                img {{ max-width: 100%; height: auto; }}
+            </style>
+        </head>
+        <body>
+            <h1>{self.domain} Documentation</h1>
+            <p>Generated on {time.strftime("%Y-%m-%d %H:%M:%S")}</p>
+            <hr>
+        """
+
+        for i, page in enumerate(self.pages):
+            if i > 0:
+                html_content += '<div class="page-break"></div>'
+
+            html_content += f"""
+            <div class="url">Source: {page["url"]}</div>
+            <h2>{page["title"]}</h2>
+            {page["content"]}
+            <hr>
+            """
+
+        html_content += "</body></html>"
+
+        # Save HTML
+        html_file = self.project_dir / filename
+        with open(html_file, "w", encoding="utf-8") as f:
+            f.write(html_content)
+
+        logger.info("HTML saved: %s", html_file)
 
     def save_json(self, filename: str | None = None) -> None:
         """Save collected data as JSON.
