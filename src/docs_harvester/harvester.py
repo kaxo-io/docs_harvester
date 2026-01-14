@@ -135,6 +135,7 @@ class DocHarvester:
                 body = soup.find("body")
                 # Ensure we have a Tag, not NavigableString
                 from bs4 import Tag
+
                 if body and isinstance(body, Tag):
                     content = body
 
