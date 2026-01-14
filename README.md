@@ -86,9 +86,33 @@ pip install -e .
 
 ### Usage
 
-**Harvest a documentation website:**
+**Harvest a documentation website (scrapes all pages):**
+```bash
+uv run docs-harvester https://docs.n8n.io
+```
+
+**Limit to specific number of pages:**
 ```bash
 uv run docs-harvester https://docs.n8n.io --max-pages 50
+```
+
+**Incremental scraping (continue from where you left off):**
+```bash
+# First run: scrape 50 pages
+uv run docs-harvester https://docs.example.com --max-pages 50
+
+# Second run: continue to 300 pages
+uv run docs-harvester https://docs.example.com --max-pages 300 --incremental
+```
+
+**JSON-only output without images:**
+```bash
+uv run docs-harvester https://docs.example.com --format json --no-images
+```
+
+**Enable HTTP caching for faster re-scraping:**
+```bash
+uv run docs-harvester https://docs.example.com --cache-ttl 3600  # 1 hour cache
 ```
 
 **Fetch GitHub repository docs:**
@@ -124,10 +148,13 @@ harvested_docs/
 uv run docs-harvester <URL> [OPTIONS]
 
 Options:
-  --max-pages N      Maximum pages to crawl (default: 100)
-  --output-dir DIR   Output directory (default: harvested_docs)
-  --format FORMAT    Output format: pdf, json, or both (default: both)
-  -v, --verbose      Enable debug logging
+  --max-pages N        Maximum pages to crawl (default: unlimited)
+  --output-dir DIR     Output directory (default: harvested_docs)
+  --format FORMAT      Output format: pdf, json, html, or both (default: both)
+  --no-images          Strip images from output (useful for JSON-only scraping)
+  --incremental        Skip already-scraped pages and continue from last run
+  --cache-ttl SECONDS  Enable HTTP caching with TTL (e.g., 3600 for 1 hour)
+  -v, --verbose        Enable debug logging
 ```
 
 ### GitHub Fetcher
@@ -141,6 +168,26 @@ Options:
   --github-token TOKEN GitHub PAT (or set GITHUB_TOKEN env var)
   -v, --verbose        Enable debug logging
 ```
+
+## Features
+
+### Performance Optimizations
+- **lxml parser** - 2-5x faster HTML parsing than default html.parser
+- **HTTP caching** - Optional response caching with configurable TTL
+- **Incremental scraping** - Resume interrupted scrapes, continue from where you left off
+- **Smart retry logic** - Automatic retries with exponential backoff
+
+### Output Flexibility
+- **Multiple formats** - PDF, JSON, HTML, or combined output
+- **Image control** - Include images (with fixed URLs) or strip them entirely
+- **Unlimited scraping** - No arbitrary page limits (or set --max-pages for control)
+- **Auto-save** - Progress saved every 10 pages (recoverable if interrupted)
+
+### Safety Features
+- **Non-docs detection** - Stops if too many non-documentation URLs found
+- **Rate limiting** - Configurable delays between requests
+- **Proper User-Agent** - Identifies as Kaxo-DocsHarvester
+- **GitHub token support** - Avoid rate limits on public repos
 
 ## Supported Sources
 
