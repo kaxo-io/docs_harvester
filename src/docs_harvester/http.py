@@ -14,11 +14,13 @@ import os
 from typing import TYPE_CHECKING
 
 import requests
+import requests_cache
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
 if TYPE_CHECKING:
     from requests import Session
+    from requests_cache import CachedSession
 
 logger = logging.getLogger(__name__)
 
@@ -31,17 +33,31 @@ def create_session(
     *,
     github_token: str | None = None,
     retries: int = DEFAULT_RETRIES,
-) -> Session:
+    cache_ttl: int | None = None,
+) -> Session | CachedSession:
     """Create a requests session with retry logic and proper headers.
 
     Args:
         github_token: Optional GitHub personal access token
         retries: Number of retries for failed requests
+        cache_ttl: Optional cache TTL in seconds (enables caching if set)
 
     Returns:
         Configured requests Session
     """
-    session = requests.Session()
+    # Use cached session if TTL is specified
+    session: Session | CachedSession
+    if cache_ttl is not None:
+        session = requests_cache.CachedSession(
+            cache_name="docs_harvester_cache",
+            backend="sqlite",
+            expire_after=cache_ttl,
+            allowable_codes=[200],
+            stale_if_error=True,
+        )
+        logger.info("HTTP caching enabled (TTL: %d seconds)", cache_ttl)
+    else:
+        session = requests.Session()
 
     retry_strategy = Retry(
         total=retries,
